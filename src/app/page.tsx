@@ -82,6 +82,16 @@ export default function Home() {
     setDocRefreshKey((k) => k + 1);
   };
 
+  const handleExport = () => {
+    const blob = new Blob([JSON.stringify(messages, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `rag-conversation-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="mx-auto flex h-dvh max-w-3xl flex-col bg-neutral-50">
       <header className="flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3">
@@ -97,12 +107,20 @@ export default function Home() {
             {showDocs ? "Chat" : "Documents"}
           </button>
           {messages.length > 0 && (
-            <button
-              onClick={handleClear}
-              className="rounded-lg px-3 py-1.5 text-xs text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors"
-            >
-              Clear
-            </button>
+            <>
+              <button
+                onClick={handleExport}
+                className="rounded-lg px-3 py-1.5 text-xs text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors"
+              >
+                Export
+              </button>
+              <button
+                onClick={handleClear}
+                className="rounded-lg px-3 py-1.5 text-xs text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors"
+              >
+                Clear
+              </button>
+            </>
           )}
         </div>
       </header>
