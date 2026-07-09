@@ -32,8 +32,40 @@ function SourceBadge({ source, index }: { source: Source; index: number }) {
   );
 }
 
+function FeedbackButtons({ messageId }: { messageId: string }) {
+  const stored = typeof window !== "undefined" ? localStorage.getItem(`feedback-${messageId}`) : null;
+  const [rating, setRating] = useState<"up" | "down" | null>(stored as "up" | "down" | null);
+
+  const handleRate = (value: "up" | "down") => {
+    const next = rating === value ? null : value;
+    setRating(next);
+    localStorage.setItem(`feedback-${messageId}`, next ?? "");
+  };
+
+  return (
+    <div className="mt-2 flex items-center gap-2 text-xs text-neutral-400">
+      <span className="text-neutral-300">Was this helpful?</span>
+      <button
+        onClick={() => handleRate("up")}
+        className={`transition-colors ${rating === "up" ? "text-green-600" : "hover:text-neutral-600"}`}
+      >
+        ▲
+      </button>
+      <button
+        onClick={() => handleRate("down")}
+        className={`transition-colors ${rating === "down" ? "text-red-600" : "hover:text-neutral-600"}`}
+      >
+        ▼
+      </button>
+      {rating && <span className="text-neutral-300">Thanks!</span>}
+    </div>
+  );
+}
+
 export default function ChatMessage({ role, content, sources }: Props) {
   const isUser = role === "user";
+  const messageId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
@@ -51,6 +83,7 @@ export default function ChatMessage({ role, content, sources }: Props) {
             ))}
           </div>
         )}
+        {!isUser && <FeedbackButtons messageId={messageId} />}
       </div>
     </div>
   );
