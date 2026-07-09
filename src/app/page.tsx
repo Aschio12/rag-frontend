@@ -13,10 +13,33 @@ interface Message {
   sources?: Source[];
 }
 
+const STORAGE_KEY = "rag-chat-messages";
+
+function loadMessages(): Message[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveMessages(msgs: Message[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs));
+  } catch {
+  }
+}
+
 export default function Home() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(loadMessages);
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    saveMessages(messages);
+  }, [messages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -46,11 +69,26 @@ export default function Home() {
     }
   };
 
+  const handleClear = () => {
+    setMessages([]);
+    localStorage.removeItem(STORAGE_KEY);
+  };
+
   return (
     <div className="mx-auto flex h-dvh max-w-3xl flex-col bg-neutral-50">
-      <header className="border-b border-neutral-200 bg-white px-4 py-3 text-center">
-        <h1 className="text-sm font-semibold text-neutral-800">RAG Knowledge Chatbot</h1>
-        <p className="text-xs text-neutral-400">Ask questions about your documents</p>
+      <header className="flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3">
+        <div>
+          <h1 className="text-sm font-semibold text-neutral-800">RAG Knowledge Chatbot</h1>
+          <p className="text-xs text-neutral-400">Ask questions about your documents</p>
+        </div>
+        {messages.length > 0 && (
+          <button
+            onClick={handleClear}
+            className="rounded-lg px-3 py-1.5 text-xs text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors"
+          >
+            Clear
+          </button>
+        )}
       </header>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
