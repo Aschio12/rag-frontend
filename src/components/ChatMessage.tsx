@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import type { Source } from "@/lib/api";
 
@@ -64,7 +64,7 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
 
 export default function ChatMessage({ role, content, sources }: Props) {
   const isUser = role === "user";
-  const messageId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const messageId = useId();
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
