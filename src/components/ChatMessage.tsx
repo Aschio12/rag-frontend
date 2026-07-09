@@ -1,11 +1,35 @@
 "use client";
 
+import { useState } from "react";
+
 import type { Source } from "@/lib/api";
 
 interface Props {
   role: "user" | "assistant";
   content: string;
   sources?: Source[];
+}
+
+function SourceBadge({ source, index }: { source: Source; index: number }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-2.5 text-xs">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex w-full items-center justify-between"
+      >
+        <span className="font-medium text-neutral-600">Source #{index + 1}</span>
+        <span className="text-neutral-400">
+          {expanded ? "▲" : "▼"} relevance: {source.score.toFixed(2)}
+        </span>
+      </button>
+      {expanded && (
+        <p className="mt-1.5 text-neutral-500 leading-relaxed line-clamp-4">
+          {source.text}
+        </p>
+      )}
+    </div>
+  );
 }
 
 export default function ChatMessage({ role, content, sources }: Props) {
@@ -21,19 +45,11 @@ export default function ChatMessage({ role, content, sources }: Props) {
       >
         <p className="whitespace-pre-wrap">{content}</p>
         {sources && sources.length > 0 && (
-          <details className="mt-2">
-            <summary className="cursor-pointer text-xs text-neutral-400 hover:text-neutral-600">
-              {sources.length} source{sources.length > 1 ? "s" : ""}
-            </summary>
-            <div className="mt-1 space-y-1">
-              {sources.map((s, i) => (
-                <div key={i} className="rounded bg-neutral-50 p-2 text-xs text-neutral-500">
-                  <span className="font-medium">Score: {s.score.toFixed(2)}</span>
-                  <p className="mt-0.5 line-clamp-2">{s.text}</p>
-                </div>
-              ))}
-            </div>
-          </details>
+          <div className="mt-3 space-y-1.5 border-t border-neutral-100 pt-2">
+            {sources.map((s, i) => (
+              <SourceBadge key={i} source={s} index={i} />
+            ))}
+          </div>
         )}
       </div>
     </div>
