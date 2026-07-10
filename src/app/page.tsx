@@ -14,13 +14,16 @@ import { Button } from "@/components/ui/button";
 import { sendMessageStream } from "@/lib/api";
 import {
   type Conversation,
+  type Folder,
   type Message,
   createConversation,
   generateId,
   loadActiveConversationId,
   loadConversations,
+  loadFolders,
   saveActiveConversationId,
   saveConversations,
+  saveFolders,
 } from "@/lib/store";
 
 const suggestions = [
@@ -37,11 +40,23 @@ export default function Home() {
   const [docRefreshKey, setDocRefreshKey] = useState(0);
   const [streamingContent, setStreamingContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [folders, setFolders] = useState<Folder[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const streamRef = useRef<AbortController | null>(null);
 
   const activeConversation = useMemo(() => conversations.find((c) => c.id === activeId) || null, [conversations, activeId]);
   const messages = activeConversation?.messages || [];
+
+  useEffect(() => {
+    const storedFolders = loadFolders();
+    if (storedFolders.length > 0) {
+      queueMicrotask(() => setFolders(storedFolders));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (folders.length > 0) saveFolders(folders);
+  }, [folders]);
 
   useEffect(() => {
     const stored = loadConversations();
@@ -266,6 +281,19 @@ export default function Home() {
     updateConversation(convId, (c) => ({ ...c, title }));
   }, [updateConversation]);
 
+  const handleCreateFolder = useCallback((name: string) => {
+    setFolders((prev) => [...prev, { id: generateId(), name, conversationIds: [] }]);
+  }, []);
+
+  const handleDeleteFolder = useCallback((folderId: string) => {
+    setFolders((prev) => prev.filter((f) => f.id !== folderId));
+    setConversations((prev) => prev.map((c) => c.folderId === folderId ? { ...c, folderId: undefined } : c));
+  }, []);
+
+  const handleMoveToFolder = useCallback((convId: string, folderId: string | undefined) => {
+    updateConversation(convId, (c) => ({ ...c, folderId }));
+  }, [updateConversation]);
+
   const handleAutoRename = useCallback((convId: string) => {
     const conv = conversations.find((c) => c.id === convId);
     if (!conv || conv.messages.length === 0) return;
@@ -332,8 +360,11 @@ export default function Home() {
         onPinConversation={handlePinConversation}
         onArchiveConversation={handleArchiveConversation}
         onDeleteConversation={handleDeleteConversation}
-        onRenameConversation={handleRenameConversation}
         onAutoRename={handleAutoRename}
+        folders={folders}
+        onCreateFolder={handleCreateFolder}
+        onDeleteFolder={handleDeleteFolder}
+        onMoveToFolder={handleMoveToFolder}
       />
 
       <div className="flex flex-1 flex-col overflow-hidden">

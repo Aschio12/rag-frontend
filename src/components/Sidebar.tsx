@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { Conversation } from "@/lib/store";
+import type { Conversation, Folder } from "@/lib/store";
 
 interface NavItem {
   icon: typeof Home;
@@ -56,11 +56,14 @@ interface SidebarProps {
   onPinConversation?: (id: string) => void;
   onArchiveConversation?: (id: string) => void;
   onDeleteConversation?: (id: string) => void;
-  onRenameConversation?: (id: string, title: string) => void;
   onAutoRename?: (id: string) => void;
+  folders?: Folder[];
+  onCreateFolder?: (name: string) => void;
+  onDeleteFolder?: (folderId: string) => void;
+  onMoveToFolder?: (convId: string, folderId: string | undefined) => void;
 }
 
-export default function Sidebar({ collapsed, setCollapsed, activeView, setActiveView, conversations, activeId, onSelectConversation, onNewChat, onPinConversation, onArchiveConversation, onDeleteConversation, onRenameConversation, onAutoRename }: SidebarProps) {
+export default function Sidebar({ collapsed, setCollapsed, activeView, setActiveView, conversations, activeId, onSelectConversation, onNewChat, onPinConversation, onArchiveConversation, onDeleteConversation, onAutoRename, folders, onCreateFolder, onDeleteFolder, onMoveToFolder }: SidebarProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -161,6 +164,37 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                 className="w-full rounded-md border border-transparent bg-muted/30 py-1.5 pl-6 pr-2 text-[11px] outline-none placeholder:text-muted-foreground/30 focus:border-primary/30 focus:bg-background transition-colors"
               />
             </div>
+
+            {folders && folders.length > 0 && (
+              <div className="mb-1 space-y-0.5">
+                {folders.map((folder) => (
+                  <div key={folder.id} className="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] text-muted-foreground/60">
+                    <span>📁 {folder.name}</span>
+                    <span className="ml-auto text-[9px]">{folder.conversationIds.length}</span>
+                    {onDeleteFolder && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onDeleteFolder(folder.id); }}
+                        className="ml-0.5 rounded p-0.5 text-muted-foreground/30 hover:text-destructive transition-colors"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {onCreateFolder && (
+              <button
+                onClick={() => {
+                  const name = prompt("Folder name:");
+                  if (name?.trim()) onCreateFolder(name.trim());
+                }}
+                className="mb-1 flex w-full items-center gap-1 rounded-md px-2 py-1 text-[10px] text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-colors"
+              >
+                + New Folder
+              </button>
+            )}
+
             <div className="space-y-0.5">
               {conversations
                 .filter((c) => !c.archived && c.title.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -203,6 +237,20 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                         >
                           📦
                         </button>
+                      )}
+                      {onMoveToFolder && folders && folders.length > 0 && (
+                        <select
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => onMoveToFolder(conv.id, e.target.value || undefined)}
+                          value={conv.folderId || ""}
+                          className="rounded border-none bg-transparent text-[9px] text-muted-foreground/40 outline-none cursor-pointer"
+                        >
+                          <option value="">📁</option>
+                          {folders.map((f) => (
+                            <option key={f.id} value={f.id}>{f.name}</option>
+                          ))}
+                          <option value="">None</option>
+                        </select>
                       )}
                       {onDeleteConversation && (
                         <button
