@@ -297,7 +297,6 @@ export default function Home() {
     handleSend(question);
   }, [handleSend]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleCopyMessage = useCallback(() => {
     showToast("Copied to clipboard");
   }, [showToast]);
