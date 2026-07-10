@@ -43,6 +43,7 @@ export default function Home() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeView, setActiveView] = useState("chats");
   const [docRefreshKey, setDocRefreshKey] = useState(0);
   const [streamingContent, setStreamingContent] = useState("");
@@ -446,6 +447,8 @@ export default function Home() {
       <Sidebar
         collapsed={sidebarCollapsed}
         setCollapsed={setSidebarCollapsed}
+        mobileOpen={mobileSidebarOpen}
+        onCloseMobile={() => setMobileSidebarOpen(false)}
         activeView={activeView}
         setActiveView={setActiveView}
         conversations={conversations}
@@ -468,6 +471,7 @@ export default function Home() {
         <Header
           sidebarCollapsed={sidebarCollapsed}
           setSidebarCollapsed={setSidebarCollapsed}
+          onToggleMobileSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
           activeView={activeView}
           messagesCount={messages.length}
           onClear={handleClear}

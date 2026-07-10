@@ -63,19 +63,35 @@ interface SidebarProps {
   onMoveToFolder?: (convId: string, folderId: string | undefined) => void;
   onAddTag?: (convId: string, tag: string) => void;
   onRemoveTag?: (convId: string, tag: string) => void;
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
-export default function Sidebar({ collapsed, setCollapsed, activeView, setActiveView, conversations, activeId, onSelectConversation, onNewChat, onPinConversation, onArchiveConversation, onDeleteConversation, onAutoRename, folders, onCreateFolder, onDeleteFolder, onMoveToFolder, onAddTag, onRemoveTag }: SidebarProps) {
+export default function Sidebar({ collapsed, setCollapsed, activeView, setActiveView, conversations, activeId, onSelectConversation, onNewChat, onPinConversation, onArchiveConversation, onDeleteConversation, onAutoRename, folders, onCreateFolder, onDeleteFolder, onMoveToFolder, onAddTag, onRemoveTag, mobileOpen, onCloseMobile }: SidebarProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Close mobile sidebar when selecting a conversation
+  const handleSelect = (id: string) => {
+    onSelectConversation?.(id);
+    setActiveView("chats");
+    onCloseMobile?.();
+  };
+
   return (
     <TooltipProvider delayDuration={300}>
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden" onClick={onCloseMobile} />
+      )}
       <motion.aside
-        animate={{ width: collapsed ? 60 : 240 }}
+        animate={{ width: collapsed && !mobileOpen ? 60 : 240 }}
         transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
         className={cn(
           "flex h-dvh flex-col border-r bg-sidebar py-2 overflow-hidden shrink-0",
+          mobileOpen && "fixed left-0 top-0 z-50 shadow-xl",
+          "max-md:absolute max-md:z-50",
+          collapsed && !mobileOpen && "max-md:hidden",
         )}
       >
         <div className={cn("flex items-center px-3 mb-2", collapsed ? "justify-center" : "justify-between")}>
@@ -203,7 +219,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                 .map((conv) => (
                   <div key={conv.id} className="group relative">
                     <button
-                      onClick={() => { onSelectConversation?.(conv.id); setActiveView("chats"); }}
+                      onClick={() => handleSelect(conv.id)}
                       className={cn(
                         "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-colors",
                         conv.id === activeId

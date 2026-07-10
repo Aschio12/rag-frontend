@@ -17,6 +17,7 @@ interface HeaderProps {
   onNewChat?: () => void;
   onExport?: (format: "json" | "markdown" | "txt") => void;
   onShare?: () => void;
+  onToggleMobileSidebar?: () => void;
   conversation?: Conversation | null;
 }
 
@@ -41,6 +42,7 @@ export default function Header({
   onNewChat,
   onExport,
   onShare,
+  onToggleMobileSidebar,
   conversation,
 }: HeaderProps) {
   return (
@@ -56,7 +58,13 @@ export default function Header({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                onClick={() => {
+                  if (window.innerWidth < 768) {
+                    onToggleMobileSidebar?.();
+                  } else {
+                    setSidebarCollapsed(!sidebarCollapsed);
+                  }
+                }}
                 className="text-muted-foreground"
               >
                 <PanelLeft className="h-4 w-4" />
