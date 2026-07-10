@@ -81,9 +81,27 @@ export default function Home() {
     saveActiveConversationId(activeId);
   }, [activeId]);
 
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [userScrolled, setUserScrolled] = useState(false);
+
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [activeConversation?.messages, streamingContent]);
+    const el = chatContainerRef.current;
+    if (!el) return;
+    const handleScroll = () => {
+      const threshold = 100;
+      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+      if (!atBottom && !loading) setUserScrolled(true);
+      else setUserScrolled(false);
+    };
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [loading]);
+
+  useEffect(() => {
+    if (!userScrolled) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [activeConversation?.messages, streamingContent, userScrolled]);
 
   const updateConversation = useCallback((convId: string, updater: (c: Conversation) => Conversation) => {
     setConversations((prev) => prev.map((c) => (c.id === convId ? updater(c) : c)));
@@ -448,7 +466,7 @@ export default function Home() {
               exit={{ opacity: 0 }}
               className="flex flex-1 flex-col overflow-hidden"
             >
-              <div className="flex-1 overflow-y-auto scrollbar-thin">
+              <div ref={chatContainerRef} className="flex-1 overflow-y-auto scrollbar-thin">
                 <div className="mx-auto max-w-3xl px-4 py-6">
                   {messages.length === 0 && !loading ? (
                     <div className="flex h-full min-h-[calc(100dvh-12rem)] flex-col items-center justify-center">
