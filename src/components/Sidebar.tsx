@@ -316,6 +316,38 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                   {searchQuery ? "No matching chats" : "No conversations yet"}
                 </p>
               )}
+
+              {/* Archived conversations */}
+              {conversations.some((c) => c.archived && c.title.toLowerCase().includes(searchQuery.toLowerCase())) && (
+                <>
+                  <div className="mt-3 mb-1 flex items-center gap-1 px-1">
+                    <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground/40">Archived</span>
+                  </div>
+                  {conversations
+                    .filter((c) => c.archived && c.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map((conv) => (
+                      <div key={conv.id} className="group relative opacity-60 hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleSelect(conv.id)}
+                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent transition-colors"
+                        >
+                          <span className="truncate">{conv.title}</span>
+                        </button>
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5">
+                          {onArchiveConversation && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); onArchiveConversation(conv.id); }}
+                              className="rounded p-0.5 text-[10px] text-muted-foreground/40 hover:text-foreground transition-colors"
+                              title="Unarchive"
+                            >
+                              📦
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </>
+              )}
             </div>
           </div>
         )}
