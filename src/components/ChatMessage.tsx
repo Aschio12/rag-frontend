@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useId, useState } from "react";
 import { motion } from "framer-motion";
 import { Check, Copy, Sparkles, ThumbsDown, ThumbsUp, User } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -132,7 +132,7 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
 
 const ChatMessage = memo(function ChatMessage({ role, content, sources, isStreaming }: Props) {
   const isUser = role === "user";
-  const messageId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const messageId = useId();
 
   return (
     <motion.div

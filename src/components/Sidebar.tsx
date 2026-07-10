@@ -14,7 +14,6 @@ import {
   Search,
   Settings,
   User,
-  Users,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";

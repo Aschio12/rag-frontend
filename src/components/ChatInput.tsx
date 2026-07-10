@@ -2,7 +2,7 @@
 
 import { type FormEvent, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUp, Sparkles } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
