@@ -32,6 +32,13 @@ const suggestions = [
   "How do I upload a file?",
 ];
 
+const followUpSuggestions = [
+  "Tell me more",
+  "Give me an example",
+  "Summarize this",
+  "Explain in simpler terms",
+];
+
 export default function Home() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -282,6 +289,10 @@ export default function Home() {
       streamRef.current = null;
     }
   }, [activeId, conversations, updateConversation]);
+
+  const handleFollowUp = useCallback((question: string) => {
+    handleSend(question);
+  }, [handleSend]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleCopyMessage = useCallback((msgId: string) => {
@@ -545,6 +556,24 @@ export default function Home() {
                             <span className="thinking-dot" />
                           </div>
                         </div>
+                      )}
+                      {!loading && messages.length > 0 && messages[messages.length - 1]?.role === "assistant" && messages[messages.length - 1]?.content && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="flex flex-wrap gap-1.5 pl-10"
+                        >
+                          <span className="w-full text-[10px] text-muted-foreground/40 mb-0.5">Suggested follow-ups</span>
+                          {followUpSuggestions.map((q) => (
+                            <button
+                              key={q}
+                              onClick={() => handleFollowUp(q)}
+                              className="rounded-full border border-muted/50 bg-muted/20 px-2.5 py-1 text-[11px] text-muted-foreground/70 hover:bg-muted/40 hover:text-foreground transition-colors"
+                            >
+                              {q}
+                            </button>
+                          ))}
+                        </motion.div>
                       )}
                       <div ref={bottomRef} />
                     </div>
