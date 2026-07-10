@@ -421,16 +421,25 @@ export default function Home() {
     URL.revokeObjectURL(url);
   }, [activeConversation]);
 
-  const handleSpeak = useCallback((_msgId: string, text: string) => {
-    if ("speechSynthesis" in window) {
+  const [speakingMsgId, setSpeakingMsgId] = useState<string | null>(null);
+
+  const handleSpeak = useCallback((msgId: string, text: string) => {
+    if (!("speechSynthesis" in window)) return;
+    if (speakingMsgId === msgId) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-      window.speechSynthesis.speak(utterance);
+      setSpeakingMsgId(null);
+      return;
     }
-  }, []);
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    utterance.onend = () => setSpeakingMsgId(null);
+    utterance.onerror = () => setSpeakingMsgId(null);
+    setSpeakingMsgId(msgId);
+    window.speechSynthesis.speak(utterance);
+  }, [speakingMsgId]);
 
   return (
     <div className="flex h-dvh">
