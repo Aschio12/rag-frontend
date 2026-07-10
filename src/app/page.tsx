@@ -262,6 +262,20 @@ export default function Home() {
     updateConversation(convId, (c) => ({ ...c, archived: !c.archived }));
   }, [updateConversation]);
 
+  const handleRenameConversation = useCallback((convId: string, title: string) => {
+    updateConversation(convId, (c) => ({ ...c, title }));
+  }, [updateConversation]);
+
+  const handleAutoRename = useCallback((convId: string) => {
+    const conv = conversations.find((c) => c.id === convId);
+    if (!conv || conv.messages.length === 0) return;
+    const firstMsg = conv.messages.find((m) => m.role === "user");
+    if (!firstMsg) return;
+    const name = firstMsg.content.slice(0, 60);
+    const suffix = name.length >= 60 ? "..." : "";
+    handleRenameConversation(convId, name + suffix);
+  }, [conversations, handleRenameConversation]);
+
   const handleDeleteConversation = useCallback((convId: string) => {
     setConversations((prev) => {
       const next = prev.filter((c) => c.id !== convId);
@@ -318,6 +332,8 @@ export default function Home() {
         onPinConversation={handlePinConversation}
         onArchiveConversation={handleArchiveConversation}
         onDeleteConversation={handleDeleteConversation}
+        onRenameConversation={handleRenameConversation}
+        onAutoRename={handleAutoRename}
       />
 
       <div className="flex flex-1 flex-col overflow-hidden">

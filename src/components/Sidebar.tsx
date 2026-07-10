@@ -56,9 +56,11 @@ interface SidebarProps {
   onPinConversation?: (id: string) => void;
   onArchiveConversation?: (id: string) => void;
   onDeleteConversation?: (id: string) => void;
+  onRenameConversation?: (id: string, title: string) => void;
+  onAutoRename?: (id: string) => void;
 }
 
-export default function Sidebar({ collapsed, setCollapsed, activeView, setActiveView, conversations, activeId, onSelectConversation, onNewChat, onPinConversation, onArchiveConversation, onDeleteConversation }: SidebarProps) {
+export default function Sidebar({ collapsed, setCollapsed, activeView, setActiveView, conversations, activeId, onSelectConversation, onNewChat, onPinConversation, onArchiveConversation, onDeleteConversation, onRenameConversation, onAutoRename }: SidebarProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
@@ -167,6 +169,15 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                       <span className="truncate">{conv.title}</span>
                     </button>
                     <div className="absolute right-1 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5">
+                      {onAutoRename && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onAutoRename(conv.id); }}
+                          className="rounded p-0.5 text-[10px] text-muted-foreground/40 hover:text-foreground transition-colors"
+                          title="Auto-rename"
+                        >
+                          ✏️
+                        </button>
+                      )}
                       {onPinConversation && (
                         <button
                           onClick={(e) => { e.stopPropagation(); onPinConversation(conv.id); }}
