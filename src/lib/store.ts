@@ -82,6 +82,16 @@ export function saveFolders(folders: Folder[]) {
   } catch {}
 }
 
+export function addTag(conv: Conversation, tag: string): Conversation {
+  const tags = conv.tags || [];
+  if (tags.includes(tag)) return conv;
+  return { ...conv, tags: [...tags, tag] };
+}
+
+export function removeTag(conv: Conversation, tag: string): Conversation {
+  return { ...conv, tags: (conv.tags || []).filter((t) => t !== tag) };
+}
+
 export function createConversation(title?: string): Conversation {
   const now = Date.now();
   return {

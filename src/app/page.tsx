@@ -290,6 +290,20 @@ export default function Home() {
     setConversations((prev) => prev.map((c) => c.folderId === folderId ? { ...c, folderId: undefined } : c));
   }, []);
 
+  const handleAddTag = useCallback((convId: string, tag: string) => {
+    updateConversation(convId, (c) => ({
+      ...c,
+      tags: [...new Set([...(c.tags || []), tag])],
+    }));
+  }, [updateConversation]);
+
+  const handleRemoveTag = useCallback((convId: string, tag: string) => {
+    updateConversation(convId, (c) => ({
+      ...c,
+      tags: (c.tags || []).filter((t) => t !== tag),
+    }));
+  }, [updateConversation]);
+
   const handleMoveToFolder = useCallback((convId: string, folderId: string | undefined) => {
     updateConversation(convId, (c) => ({ ...c, folderId }));
   }, [updateConversation]);
@@ -365,6 +379,8 @@ export default function Home() {
         onCreateFolder={handleCreateFolder}
         onDeleteFolder={handleDeleteFolder}
         onMoveToFolder={handleMoveToFolder}
+        onAddTag={handleAddTag}
+        onRemoveTag={handleRemoveTag}
       />
 
       <div className="flex flex-1 flex-col overflow-hidden">

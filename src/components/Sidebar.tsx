@@ -61,9 +61,11 @@ interface SidebarProps {
   onCreateFolder?: (name: string) => void;
   onDeleteFolder?: (folderId: string) => void;
   onMoveToFolder?: (convId: string, folderId: string | undefined) => void;
+  onAddTag?: (convId: string, tag: string) => void;
+  onRemoveTag?: (convId: string, tag: string) => void;
 }
 
-export default function Sidebar({ collapsed, setCollapsed, activeView, setActiveView, conversations, activeId, onSelectConversation, onNewChat, onPinConversation, onArchiveConversation, onDeleteConversation, onAutoRename, folders, onCreateFolder, onDeleteFolder, onMoveToFolder }: SidebarProps) {
+export default function Sidebar({ collapsed, setCollapsed, activeView, setActiveView, conversations, activeId, onSelectConversation, onNewChat, onPinConversation, onArchiveConversation, onDeleteConversation, onAutoRename, folders, onCreateFolder, onDeleteFolder, onMoveToFolder, onAddTag, onRemoveTag }: SidebarProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -211,6 +213,23 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                     >
                       {conv.pinned && <span className="text-[10px] text-amber-500 shrink-0">📌</span>}
                       <span className="truncate">{conv.title}</span>
+                      {conv.tags && conv.tags.length > 0 && (
+                        <span className="ml-auto flex gap-0.5">
+                          {conv.tags.slice(0, 2).map((t) => (
+                            <span
+                              key={t}
+                              onClick={(e) => { e.stopPropagation(); onRemoveTag?.(conv.id, t); }}
+                              className="rounded bg-muted px-1 text-[8px] text-muted-foreground/60 cursor-pointer hover:line-through"
+                              title="Remove tag"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                          {conv.tags.length > 2 && (
+                            <span className="text-[8px] text-muted-foreground/40">+{conv.tags.length - 2}</span>
+                          )}
+                        </span>
+                      )}
                     </button>
                     <div className="absolute right-1 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5">
                       {onAutoRename && (
@@ -220,6 +239,19 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                           title="Auto-rename"
                         >
                           ✏️
+                        </button>
+                      )}
+                      {onAddTag && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const tag = prompt("Add tag:");
+                            if (tag?.trim()) onAddTag(conv.id, tag.trim());
+                          }}
+                          className="rounded p-0.5 text-[10px] text-muted-foreground/40 hover:text-foreground transition-colors"
+                          title="Add tag"
+                        >
+                          🏷️
                         </button>
                       )}
                       {onPinConversation && (
