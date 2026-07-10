@@ -254,6 +254,25 @@ export default function Home() {
   const handleCopyMessage = useCallback((msgId: string) => {
   }, []);
 
+  const handlePinConversation = useCallback((convId: string) => {
+    updateConversation(convId, (c) => ({ ...c, pinned: !c.pinned }));
+  }, [updateConversation]);
+
+  const handleArchiveConversation = useCallback((convId: string) => {
+    updateConversation(convId, (c) => ({ ...c, archived: !c.archived }));
+  }, [updateConversation]);
+
+  const handleDeleteConversation = useCallback((convId: string) => {
+    setConversations((prev) => {
+      const next = prev.filter((c) => c.id !== convId);
+      if (activeId === convId) {
+        const newActive = next.length > 0 ? next[0].id : null;
+        queueMicrotask(() => setActiveId(newActive));
+      }
+      return next;
+    });
+  }, [activeId]);
+
   const handleBookmarkMessage = useCallback((msgId: string) => {
     if (!activeId) return;
     updateConversation(activeId, (c) => ({
@@ -296,6 +315,9 @@ export default function Home() {
         activeId={activeId}
         onSelectConversation={setActiveId}
         onNewChat={handleNewChat}
+        onPinConversation={handlePinConversation}
+        onArchiveConversation={handleArchiveConversation}
+        onDeleteConversation={handleDeleteConversation}
       />
 
       <div className="flex flex-1 flex-col overflow-hidden">

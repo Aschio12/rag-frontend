@@ -53,9 +53,12 @@ interface SidebarProps {
   activeId?: string | null;
   onSelectConversation?: (id: string) => void;
   onNewChat?: () => void;
+  onPinConversation?: (id: string) => void;
+  onArchiveConversation?: (id: string) => void;
+  onDeleteConversation?: (id: string) => void;
 }
 
-export default function Sidebar({ collapsed, setCollapsed, activeView, setActiveView, conversations, activeId, onSelectConversation, onNewChat }: SidebarProps) {
+export default function Sidebar({ collapsed, setCollapsed, activeView, setActiveView, conversations, activeId, onSelectConversation, onNewChat, onPinConversation, onArchiveConversation, onDeleteConversation }: SidebarProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
@@ -147,21 +150,51 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
               )}
             </div>
             <div className="space-y-0.5">
-              {conversations.map((conv) => (
-                <button
-                  key={conv.id}
-                  onClick={() => { onSelectConversation?.(conv.id); setActiveView("chats"); }}
-                  className={cn(
-                    "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-colors",
-                    conv.id === activeId
-                      ? "bg-primary/10 text-primary font-medium"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                  )}
-                >
-                  <span className="truncate">{conv.title}</span>
-                </button>
-              ))}
-              {conversations.length === 0 && (
+              {conversations
+                .filter((c) => !c.archived)
+                .map((conv) => (
+                  <div key={conv.id} className="group relative">
+                    <button
+                      onClick={() => { onSelectConversation?.(conv.id); setActiveView("chats"); }}
+                      className={cn(
+                        "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-colors",
+                        conv.id === activeId
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      )}
+                    >
+                      {conv.pinned && <span className="text-[10px] text-amber-500 shrink-0">📌</span>}
+                      <span className="truncate">{conv.title}</span>
+                    </button>
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5">
+                      {onPinConversation && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onPinConversation(conv.id); }}
+                          className={cn("rounded p-0.5 text-[10px] transition-colors", conv.pinned ? "text-amber-500" : "text-muted-foreground/40 hover:text-muted-foreground")}
+                        >
+                          📌
+                        </button>
+                      )}
+                      {onArchiveConversation && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onArchiveConversation(conv.id); }}
+                          className="rounded p-0.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                        >
+                          📦
+                        </button>
+                      )}
+                      {onDeleteConversation && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onDeleteConversation(conv.id); }}
+                          className="rounded p-0.5 text-[10px] text-muted-foreground/40 hover:text-destructive transition-colors"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              {conversations.filter((c) => !c.archived).length === 0 && (
                 <p className="px-2.5 py-1.5 text-[10px] text-muted-foreground/40">No conversations yet</p>
               )}
             </div>
