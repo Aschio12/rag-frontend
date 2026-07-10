@@ -17,16 +17,6 @@ interface Message {
 
 const STORAGE_KEY = "rag-chat-messages";
 
-function loadMessages(): Message[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
 function saveMessages(msgs: Message[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs));
@@ -35,14 +25,27 @@ function saveMessages(msgs: Message[]) {
 }
 
 export default function Home() {
-  const [messages, setMessages] = useState<Message[]>(loadMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDocs, setShowDocs] = useState(false);
   const [docRefreshKey, setDocRefreshKey] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    saveMessages(messages);
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Message[];
+        queueMicrotask(() => setMessages(parsed));
+      }
+    } catch {
+    }
+  }, []);
+
+  useEffect(() => {
+    if (messages.length > 0 || document.querySelector("[data-init]")) {
+      saveMessages(messages);
+    }
   }, [messages]);
 
   useEffect(() => {
