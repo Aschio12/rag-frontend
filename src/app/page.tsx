@@ -359,9 +359,10 @@ export default function Home() {
     if (!conv || conv.messages.length === 0) return;
     const firstMsg = conv.messages.find((m) => m.role === "user");
     if (!firstMsg) return;
-    const name = firstMsg.content.slice(0, 60);
-    const suffix = name.length >= 60 ? "..." : "";
-    handleRenameConversation(convId, name + suffix);
+    let name = firstMsg.content.replace(/\n/g, " ").trim().slice(0, 60);
+    if (name.length >= 60) name = name.slice(0, 57) + "...";
+    if (name.length === 0) name = "New Chat";
+    handleRenameConversation(convId, name);
   }, [conversations, handleRenameConversation]);
 
   const handleDeleteConversation = useCallback((convId: string) => {
