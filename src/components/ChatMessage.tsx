@@ -133,6 +133,19 @@ function MermaidDiagram({ code }: { code: string }) {
   return <div ref={ref} className="my-3 flex justify-center overflow-x-auto" />;
 }
 
+function TypingContent({ content }: { content: string }) {
+  const [displayed, setDisplayed] = useState(0);
+  useEffect(() => {
+    if (displayed >= content.length) return;
+    const timer = setTimeout(() => {
+      setDisplayed((prev) => Math.min(prev + 3, content.length));
+    }, 15);
+    return () => clearTimeout(timer);
+  }, [content, displayed]);
+  useEffect(() => { queueMicrotask(() => setDisplayed(0)); }, [content]);
+  return <span>{content.slice(0, displayed)}<span className="animate-pulse">▊</span></span>;
+}
+
 const ChatMessage = memo(function ChatMessage({
   id,
   role,
@@ -301,6 +314,10 @@ const ChatMessage = memo(function ChatMessage({
             </div>
           ) : isUser ? (
             <p className="whitespace-pre-wrap">{content}</p>
+          ) : isStreaming ? (
+            <div className="text-sm leading-relaxed whitespace-pre-wrap">
+              <TypingContent content={content} />
+            </div>
           ) : (
             <div className="prose prose-sm dark:prose-invert max-w-none prose-pre:p-0 prose-code:before:content-none prose-code:after:content-none">
               <ReactMarkdown
