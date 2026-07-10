@@ -199,7 +199,7 @@ const ChatMessage = memo(function ChatMessage({
         </AvatarFallback>
       </Avatar>
 
-      <div className={cn("flex max-w-[75%] flex-col", isUser ? "items-end" : "items-start")}>
+      <div className={cn("flex max-w-[85%] md:max-w-[75%] flex-col", isUser ? "items-end" : "items-start")}>
         <div
           className={cn(
             "rounded-2xl px-4 py-2.5 text-sm leading-relaxed relative",

@@ -49,7 +49,7 @@ export default function ChatInput({ onSend, disabled, placeholder }: Props) {
       animate={{ y: 0, opacity: 1 }}
       className="border-t bg-background px-4 py-3"
     >
-      <form onSubmit={handleSubmit} className="mx-auto flex max-w-3xl items-end gap-2">
+      <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-3xl items-end gap-2">
         <div className="relative flex-1">
           <textarea
             ref={textRef}
