@@ -50,6 +50,8 @@ function CodeBlock({ className, children, ...props }: React.HTMLAttributes<HTMLE
   const code = String(children ?? "");
   const match = /language-(\w+)/.exec(className ?? "");
   const lang = match?.[1] ?? "";
+  const lines = code.split("\n");
+  const showLineNumbers = lines.length > 1;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(code);
@@ -62,10 +64,18 @@ function CodeBlock({ className, children, ...props }: React.HTMLAttributes<HTMLE
       {lang && (
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-1.5">
           <span className="text-[11px] font-medium text-white/40">{lang}</span>
+          <span className="text-[9px] text-white/20">{lines.length} lines</span>
         </div>
       )}
       <div className="relative">
         <pre className={cn("overflow-x-auto p-4 text-sm leading-relaxed", !lang && "p-0")}>
+          {showLineNumbers && (
+            <span className="float-left mr-4 select-none text-right text-white/15" aria-hidden>
+              {lines.map((_, i) => (
+                <span key={i} className="block leading-relaxed">{i + 1}</span>
+              ))}
+            </span>
+          )}
           <code className={className} {...props}>
             {children}
           </code>
