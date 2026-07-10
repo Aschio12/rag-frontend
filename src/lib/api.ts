@@ -43,10 +43,27 @@ export async function* sendMessageStream(
   const reader = res.body?.getReader();
   if (!reader) return;
   const decoder = new TextDecoder();
+  let buffer = "";
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
-    yield decoder.decode(value, { stream: true });
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+    for (const line of lines) {
+      if (line.startsWith("data: ")) {
+        const data = line.slice(6);
+        if (data === "[DONE]") return;
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.content) yield parsed.content;
+          else if (parsed.answer) yield parsed.answer;
+          else if (typeof parsed === "string") yield parsed;
+        } catch {
+          yield data;
+        }
+      }
+    }
   }
 }
 
@@ -60,5 +77,43 @@ export async function uploadDocument(file: File) {
   if (!res.ok) {
     throw new Error(`Upload error: ${res.status}`);
   }
+  return res.json();
+}
+
+export async function listDocuments() {
+  const res = await fetch(`${API_BASE}/api/v1/documents`);
+  if (!res.ok) throw new Error(`List documents error: ${res.status}`);
+  return res.json();
+}
+
+export async function deleteDocument(docId: string) {
+  const res = await fetch(`${API_BASE}/api/v1/documents/${docId}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error(`Delete document error: ${res.status}`);
+  return res.json();
+}
+
+export async function renameConversation(conversationId: string, title: string) {
+  const res = await fetch(`${API_BASE}/api/v1/conversations/${conversationId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title }),
+  });
+  if (!res.ok) throw new Error(`Rename conversation error: ${res.status}`);
+  return res.json();
+}
+
+export async function listConversations() {
+  const res = await fetch(`${API_BASE}/api/v1/conversations`);
+  if (!res.ok) throw new Error(`List conversations error: ${res.status}`);
+  return res.json();
+}
+
+export async function deleteConversation(conversationId: string) {
+  const res = await fetch(`${API_BASE}/api/v1/conversations/${conversationId}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error(`Delete conversation error: ${res.status}`);
   return res.json();
 }
