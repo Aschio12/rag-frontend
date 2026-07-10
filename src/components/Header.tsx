@@ -2,10 +2,11 @@
 
 import { type Dispatch, type SetStateAction } from "react";
 import { motion } from "framer-motion";
-import { PanelLeft, Trash2 } from "lucide-react";
+import { PanelLeft, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import type { Conversation } from "@/lib/store";
 
 interface HeaderProps {
   sidebarCollapsed: boolean;
@@ -13,6 +14,8 @@ interface HeaderProps {
   activeView: string;
   messagesCount: number;
   onClear: () => void;
+  onNewChat?: () => void;
+  conversation?: Conversation | null;
 }
 
 const viewTitles: Record<string, string> = {
@@ -33,6 +36,8 @@ export default function Header({
   activeView,
   messagesCount,
   onClear,
+  onNewChat,
+  conversation,
 }: HeaderProps) {
   return (
     <motion.header
@@ -61,11 +66,30 @@ export default function Header({
 
         <div className="flex items-center gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          <h2 className="text-sm font-medium">{viewTitles[activeView] || "Chats"}</h2>
+          <h2 className="text-sm font-medium truncate max-w-48">
+            {activeView === "chats" && conversation ? conversation.title : (viewTitles[activeView] || "Chats")}
+          </h2>
         </div>
       </div>
 
       <div className="flex items-center gap-1">
+        {onNewChat && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onNewChat}
+                  className="text-muted-foreground"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>New chat</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
         {messagesCount > 0 && (
           <TooltipProvider>
             <Tooltip>

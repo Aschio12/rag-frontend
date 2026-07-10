@@ -11,6 +11,7 @@ import {
   Home,
   Library,
   MessagesSquare,
+  Plus,
   Search,
   Settings,
   User,
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import type { Conversation } from "@/lib/store";
 
 interface NavItem {
   icon: typeof Home;
@@ -47,9 +49,13 @@ interface SidebarProps {
   setCollapsed: Dispatch<SetStateAction<boolean>>;
   activeView: string;
   setActiveView: Dispatch<SetStateAction<string>>;
+  conversations?: Conversation[];
+  activeId?: string | null;
+  onSelectConversation?: (id: string) => void;
+  onNewChat?: () => void;
 }
 
-export default function Sidebar({ collapsed, setCollapsed, activeView, setActiveView }: SidebarProps) {
+export default function Sidebar({ collapsed, setCollapsed, activeView, setActiveView, conversations, activeId, onSelectConversation, onNewChat }: SidebarProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
@@ -84,7 +90,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
 
         <Separator className="mb-2" />
 
-        <nav className="flex-1 space-y-0.5 px-2">
+        <nav className="space-y-0.5 px-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeView === item.id;
@@ -126,6 +132,41 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
             );
           })}
         </nav>
+
+        {!collapsed && conversations && (
+          <div className="mt-2 flex-1 overflow-y-auto px-2 scrollbar-thin">
+            <div className="flex items-center justify-between mb-1 px-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Chats</span>
+              {onNewChat && (
+                <button
+                  onClick={onNewChat}
+                  className="rounded p-0.5 text-muted-foreground/50 hover:text-foreground transition-colors"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+            <div className="space-y-0.5">
+              {conversations.map((conv) => (
+                <button
+                  key={conv.id}
+                  onClick={() => { onSelectConversation?.(conv.id); setActiveView("chats"); }}
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-colors",
+                    conv.id === activeId
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  )}
+                >
+                  <span className="truncate">{conv.title}</span>
+                </button>
+              ))}
+              {conversations.length === 0 && (
+                <p className="px-2.5 py-1.5 text-[10px] text-muted-foreground/40">No conversations yet</p>
+              )}
+            </div>
+          </div>
+        )}
 
         <Separator className="my-2" />
 

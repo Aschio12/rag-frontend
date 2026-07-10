@@ -11,82 +11,160 @@ import DocumentUpload from "@/components/DocumentUpload";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { Source } from "@/lib/api";
-import { sendMessage } from "@/lib/api";
+import { sendMessage, sendMessageStream } from "@/lib/api";
+import {
+  type Conversation,
+  type Message,
+  createConversation,
+  generateId,
+  loadActiveConversationId,
+  loadConversations,
+  saveActiveConversationId,
+  saveConversations,
+} from "@/lib/store";
 
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-  sources?: Source[];
-}
-
-const STORAGE_KEY = "rag-chat-messages";
-
-function saveMessages(msgs: Message[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs));
-  } catch {}
-}
+const suggestions = [
+  "What documents do I have?",
+  "Summarize the refund policy",
+  "How do I upload a file?",
+];
 
 export default function Home() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeView, setActiveView] = useState("chats");
   const [docRefreshKey, setDocRefreshKey] = useState(0);
+  const [streamingContent, setStreamingContent] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const streamRef = useRef<AbortController | null>(null);
+
+  const activeConversation = conversations.find((c) => c.id === activeId) || null;
+  const messages = activeConversation?.messages || [];
+  const loading = streamRef.current !== null;
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Message[];
-        queueMicrotask(() => setMessages(parsed));
+    const stored = loadConversations();
+    if (stored.length > 0) {
+      setConversations(stored);
+      const active = loadActiveConversationId();
+      if (active && stored.some((c) => c.id === active)) {
+        setActiveId(active);
+      } else {
+        setActiveId(stored[0].id);
       }
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    if (messages.length > 0) saveMessages(messages);
-  }, [messages]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const handleSend = useCallback(async (text: string) => {
-    const userMsg: Message = { role: "user", content: text };
-    setMessages((prev) => [...prev, userMsg]);
-    setLoading(true);
-
-    try {
-      const res = await sendMessage({ message: text });
-      const assistantMsg: Message = {
-        role: "assistant",
-        content: res.answer,
-        sources: res.sources,
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
-    } catch {
-      const errMsg: Message = {
-        role: "assistant",
-        content: "Sorry, something went wrong. Please try again.",
-      };
-      setMessages((prev) => [...prev, errMsg]);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
+  useEffect(() => {
+    if (conversations.length > 0) saveConversations(conversations);
+  }, [conversations]);
+
+  useEffect(() => {
+    saveActiveConversationId(activeId);
+  }, [activeId]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, streamingContent]);
+
+  const updateConversation = useCallback((convId: string, updater: (c: Conversation) => Conversation) => {
+    setConversations((prev) => prev.map((c) => (c.id === convId ? updater(c) : c)));
+  }, []);
+
+  const handleSend = useCallback(async (text: string) => {
+    const userMsg: Message = {
+      id: generateId(),
+      role: "user",
+      content: text,
+      timestamp: Date.now(),
+    };
+
+    let convId = activeId;
+
+    if (!convId) {
+      const conv = createConversation(text.slice(0, 60));
+      conv.messages.push(userMsg);
+      setConversations((prev) => [conv, ...prev]);
+      setActiveId(conv.id);
+      convId = conv.id;
+    } else {
+      updateConversation(convId, (c) => ({
+        ...c,
+        messages: [...c.messages, userMsg],
+        updatedAt: Date.now(),
+      }));
+    }
+
+    const assistantId = generateId();
+    const assistantMsgPlaceholder: Message = {
+      id: assistantId,
+      role: "assistant",
+      content: "",
+      timestamp: Date.now(),
+    };
+
+    updateConversation(convId, (c) => ({
+      ...c,
+      messages: [...c.messages, assistantMsgPlaceholder],
+      updatedAt: Date.now(),
+    }));
+
+    const controller = new AbortController();
+    streamRef.current = controller;
+    setStreamingContent("");
+
+    try {
+      let accumulated = "";
+      const stream = sendMessageStream({ message: text });
+      for await (const chunk of stream) {
+        if (controller.signal.aborted) break;
+        accumulated += chunk;
+        setStreamingContent(accumulated);
+      }
+
+      if (!controller.signal.aborted) {
+        updateConversation(convId, (c) => ({
+          ...c,
+          messages: c.messages.map((m) =>
+            m.id === assistantId ? { ...m, content: accumulated } : m,
+          ),
+          updatedAt: Date.now(),
+        }));
+        setStreamingContent("");
+      }
+    } catch {
+      if (!controller.signal.aborted) {
+        updateConversation(convId, (c) => ({
+          ...c,
+          messages: c.messages.map((m) =>
+            m.id === assistantId
+              ? { ...m, content: "Sorry, something went wrong. Please try again." }
+              : m,
+          ),
+          updatedAt: Date.now(),
+        }));
+        setStreamingContent("");
+      }
+    } finally {
+      streamRef.current = null;
+    }
+  }, [activeId, updateConversation]);
+
   const handleClear = useCallback(() => {
-    setMessages([]);
-    localStorage.removeItem(STORAGE_KEY);
+    setConversations([]);
+    setActiveId(null);
   }, []);
 
   const handleUploaded = useCallback(() => {
     setDocRefreshKey((k) => k + 1);
+  }, []);
+
+  const handleNewChat = useCallback(() => {
+    const conv = createConversation();
+    setConversations((prev) => [conv, ...prev]);
+    setActiveId(conv.id);
+    setActiveView("chats");
   }, []);
 
   return (
@@ -96,6 +174,10 @@ export default function Home() {
         setCollapsed={setSidebarCollapsed}
         activeView={activeView}
         setActiveView={setActiveView}
+        conversations={conversations}
+        activeId={activeId}
+        onSelectConversation={setActiveId}
+        onNewChat={handleNewChat}
       />
 
       <div className="flex flex-1 flex-col overflow-hidden">
@@ -105,6 +187,8 @@ export default function Home() {
           activeView={activeView}
           messagesCount={messages.length}
           onClear={handleClear}
+          onNewChat={handleNewChat}
+          conversation={activeConversation}
         />
 
         <AnimatePresence mode="wait">
@@ -118,7 +202,7 @@ export default function Home() {
             >
               <div className="flex-1 overflow-y-auto scrollbar-thin">
                 <div className="mx-auto max-w-3xl px-4 py-6">
-                  {messages.length === 0 ? (
+                  {messages.length === 0 && !loading ? (
                     <div className="flex h-full min-h-[calc(100dvh-12rem)] flex-col items-center justify-center">
                       <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}
@@ -165,23 +249,25 @@ export default function Home() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {messages.map((m, i) => (
+                      {messages.map((m) => (
                         <ChatMessage
-                          key={i}
+                          key={m.id}
+                          id={m.id}
                           role={m.role}
                           content={m.content}
                           sources={m.sources}
-                          isStreaming={loading && i === messages.length - 1 && m.role === "assistant"}
+                          isStreaming={m.content === "" && loading}
                         />
                       ))}
-                      {loading && (
+                      {loading && messages[messages.length - 1]?.content !== "" && (
                         <div className="flex gap-3">
                           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
                             <Sparkles className="h-3.5 w-3.5 text-white" />
                           </div>
-                          <div className="flex-1 space-y-2">
-                            <Skeleton className="h-4 w-3/4" />
-                            <Skeleton className="h-4 w-1/2" />
+                          <div className="flex items-center gap-1.5">
+                            <span className="thinking-dot" />
+                            <span className="thinking-dot" />
+                            <span className="thinking-dot" />
                           </div>
                         </div>
                       )}
@@ -245,9 +331,3 @@ export default function Home() {
     </div>
   );
 }
-
-const suggestions = [
-  "What documents do I have?",
-  "Summarize the refund policy",
-  "How do I upload a file?",
-];

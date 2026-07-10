@@ -15,6 +15,7 @@ import type { Source } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 interface Props {
+  id: string;
   role: "user" | "assistant";
   content: string;
   sources?: Source[];
@@ -130,7 +131,7 @@ function FeedbackButtons({ messageId }: { messageId: string }) {
   );
 }
 
-const ChatMessage = memo(function ChatMessage({ role, content, sources, isStreaming }: Props) {
+const ChatMessage = memo(function ChatMessage({ id, role, content, sources, isStreaming }: Props) {
   const isUser = role === "user";
   const messageId = useId();
 
