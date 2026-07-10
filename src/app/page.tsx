@@ -12,6 +12,7 @@ import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { sendMessageStream } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 import {
   type Conversation,
   type Folder,
@@ -40,6 +41,7 @@ const followUpSuggestions = [
 ];
 
 export default function Home() {
+  const { showToast } = useToast();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -296,8 +298,9 @@ export default function Home() {
   }, [handleSend]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleCopyMessage = useCallback((msgId: string) => {
-  }, []);
+  const handleCopyMessage = useCallback(() => {
+    showToast("Copied to clipboard");
+  }, [showToast]);
 
   const handlePinConversation = useCallback((convId: string) => {
     updateConversation(convId, (c) => ({ ...c, pinned: !c.pinned }));
@@ -361,13 +364,19 @@ export default function Home() {
 
   const handleBookmarkMessage = useCallback((msgId: string) => {
     if (!activeId) return;
-    updateConversation(activeId, (c) => ({
-      ...c,
-      messages: c.messages.map((m) =>
-        m.id === msgId ? { ...m, bookmarked: !m.bookmarked } : m,
-      ),
-    }));
-  }, [activeId, updateConversation]);
+    let wasBookmarked = false;
+    updateConversation(activeId, (c) => {
+      const msg = c.messages.find((m) => m.id === msgId);
+      wasBookmarked = !!msg?.bookmarked;
+      return {
+        ...c,
+        messages: c.messages.map((m) =>
+          m.id === msgId ? { ...m, bookmarked: !m.bookmarked } : m,
+        ),
+      };
+    });
+    showToast(wasBookmarked ? "Bookmark removed" : "Message bookmarked");
+  }, [activeId, updateConversation, showToast]);
 
   const handleRateMessage = useCallback((msgId: string, rating: "up" | "down" | null) => {
     if (!activeId) return;
@@ -392,7 +401,8 @@ export default function Home() {
     }).join("\n\n---\n\n");
     navigator.clipboard.writeText(text);
     setShowShareDialog(false);
-  }, [activeConversation]);
+    showToast("Shared to clipboard");
+  }, [activeConversation, showToast]);
 
   const handleExportChat = useCallback((format: "json" | "markdown" | "txt") => {
     if (!activeConversation) return;
@@ -420,7 +430,8 @@ export default function Home() {
     a.download = `${filename}.${format === "json" ? "json" : format === "markdown" ? "md" : "txt"}`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [activeConversation]);
+    showToast("Chat exported");
+  }, [activeConversation, showToast]);
 
   const [speakingMsgId, setSpeakingMsgId] = useState<string | null>(null);
 
