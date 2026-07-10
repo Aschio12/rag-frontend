@@ -62,6 +62,7 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, setCollapsed, activeView, setActiveView, conversations, activeId, onSelectConversation, onNewChat, onPinConversation, onArchiveConversation, onDeleteConversation, onRenameConversation, onAutoRename }: SidebarProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -151,9 +152,18 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                 </button>
               )}
             </div>
+            <div className="relative mb-1">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/40" />
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search chats..."
+                className="w-full rounded-md border border-transparent bg-muted/30 py-1.5 pl-6 pr-2 text-[11px] outline-none placeholder:text-muted-foreground/30 focus:border-primary/30 focus:bg-background transition-colors"
+              />
+            </div>
             <div className="space-y-0.5">
               {conversations
-                .filter((c) => !c.archived)
+                .filter((c) => !c.archived && c.title.toLowerCase().includes(searchQuery.toLowerCase()))
                 .map((conv) => (
                   <div key={conv.id} className="group relative">
                     <button
@@ -205,8 +215,10 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                     </div>
                   </div>
                 ))}
-              {conversations.filter((c) => !c.archived).length === 0 && (
-                <p className="px-2.5 py-1.5 text-[10px] text-muted-foreground/40">No conversations yet</p>
+              {conversations.filter((c) => !c.archived && c.title.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                <p className="px-2.5 py-1.5 text-[10px] text-muted-foreground/40">
+                  {searchQuery ? "No matching chats" : "No conversations yet"}
+                </p>
               )}
             </div>
           </div>
