@@ -1,11 +1,25 @@
 "use client";
 
-import { memo, useId, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Check, Copy, Sparkles, ThumbsDown, ThumbsUp, User } from "lucide-react";
+import {
+  Bookmark,
+  Check,
+  Copy,
+  Edit2,
+  RefreshCw,
+  Sparkles,
+  ThumbsDown,
+  ThumbsUp,
+  Trash2,
+  User,
+  Volume2,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +34,15 @@ interface Props {
   content: string;
   sources?: Source[];
   isStreaming?: boolean;
+  bookmarked?: boolean;
+  rating?: "up" | "down" | null;
+  onEdit?: (id: string, newContent: string) => void;
+  onDelete?: (id: string) => void;
+  onRegenerate?: (id: string) => void;
+  onCopy?: (id: string) => void;
+  onBookmark?: (id: string) => void;
+  onRate?: (id: string, rating: "up" | "down" | null) => void;
+  onSpeak?: (id: string, content: string) => void;
 }
 
 function CodeBlock({ className, children, ...props }: React.HTMLAttributes<HTMLElement>) {
@@ -80,67 +103,82 @@ function SourceBadge({ source, index }: { source: Source; index: number }) {
   );
 }
 
-function FeedbackButtons({ messageId }: { messageId: string }) {
-  const stored = typeof window !== "undefined" ? localStorage.getItem(`feedback-${messageId}`) : null;
-  const [rating, setRating] = useState<"up" | "down" | null>(stored as "up" | "down" | null);
+function MermaidDiagram({ code }: { code: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState(false);
 
-  const handleRate = (value: "up" | "down") => {
-    const next = rating === value ? null : value;
-    setRating(next);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(`feedback-${messageId}`, next ?? "");
+  useEffect(() => {
+    let mounted = true;
+    async function render() {
+      if (!ref.current || !code) return;
+      try {
+        const mermaid = (await import("mermaid")).default;
+        mermaid.initialize({ startOnLoad: false, theme: "dark" });
+        const { svg } = await mermaid.render("mermaid-" + Math.random().toString(36).slice(2), code);
+        if (mounted && ref.current) {
+          ref.current.innerHTML = svg;
+        }
+      } catch {
+        if (mounted) setError(true);
+      }
     }
-  };
+    render();
+    return () => { mounted = false; };
+  }, [code]);
 
-  return (
-    <div className="mt-3 flex items-center gap-1.5">
-      <span className="mr-1 text-[11px] text-muted-foreground/50">Was this helpful?</span>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => handleRate("up")}
-              className={cn(
-                "rounded-md p-1 transition-colors",
-                rating === "up" ? "text-emerald-500" : "text-muted-foreground/40 hover:text-muted-foreground",
-              )}
-            >
-              <ThumbsUp className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Helpful</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => handleRate("down")}
-              className={cn(
-                "rounded-md p-1 transition-colors",
-                rating === "down" ? "text-red-500" : "text-muted-foreground/40 hover:text-muted-foreground",
-              )}
-            >
-              <ThumbsDown className="h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Not helpful</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
-  );
+  if (error) {
+    return <pre className="rounded bg-red-950/30 p-3 text-xs text-red-400 overflow-x-auto">{code}</pre>;
+  }
+
+  return <div ref={ref} className="my-3 flex justify-center overflow-x-auto" />;
 }
 
-const ChatMessage = memo(function ChatMessage({ id, role, content, sources, isStreaming }: Props) {
+const ChatMessage = memo(function ChatMessage({
+  id,
+  role,
+  content,
+  sources,
+  isStreaming,
+  bookmarked,
+  rating: propRating,
+  onEdit,
+  onDelete,
+  onRegenerate,
+  onCopy,
+  onBookmark,
+  onRate,
+  onSpeak,
+}: Props) {
   const isUser = role === "user";
-  const messageId = useId();
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState(content);
+  const [showActions, setShowActions] = useState(false);
+
+  const handleSaveEdit = useCallback(() => {
+    if (editText.trim() && editText !== content) {
+      onEdit?.(id, editText.trim());
+    }
+    setEditing(false);
+  }, [editText, content, id, onEdit]);
+
+  const handleCopyMessage = useCallback(() => {
+    navigator.clipboard.writeText(content);
+    onCopy?.(id);
+  }, [content, id, onCopy]);
+
+  const handleRate = useCallback((value: "up" | "down") => {
+    const next = propRating === value ? null : value;
+    onRate?.(id, next);
+  }, [propRating, id, onRate]);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className={cn("flex gap-3", isUser ? "flex-row-reverse" : "flex-row")}
+      className={cn("flex gap-3 group", isUser ? "flex-row-reverse" : "flex-row")}
+      onMouseEnter={() => setShowActions(true)}
+      onMouseLeave={() => setShowActions(false)}
     >
       <Avatar className={cn("mt-0.5 h-7 w-7 shrink-0", isUser ? "bg-primary" : "bg-gradient-to-br from-blue-500 to-purple-600")}>
         <AvatarFallback className="text-[10px] text-white">
@@ -151,19 +189,123 @@ const ChatMessage = memo(function ChatMessage({ id, role, content, sources, isSt
       <div className={cn("flex max-w-[75%] flex-col", isUser ? "items-end" : "items-start")}>
         <div
           className={cn(
-            "rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+            "rounded-2xl px-4 py-2.5 text-sm leading-relaxed relative",
             isUser
               ? "bg-chat-user text-chat-user-foreground rounded-br-md"
               : "bg-chat-assistant text-chat-assistant-foreground rounded-bl-md border shadow-xs",
           )}
         >
-          {isUser ? (
+          {/* Message actions bar */}
+          <div
+            className={cn(
+              "absolute -top-8 flex items-center gap-0.5 rounded-lg border bg-background px-1 py-0.5 shadow-sm transition-opacity duration-200",
+              isUser ? "right-0" : "left-0",
+              showActions && !editing ? "opacity-100" : "opacity-0 pointer-events-none",
+            )}
+          >
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button onClick={handleCopyMessage} className="rounded p-1 text-muted-foreground/60 hover:text-foreground transition-colors">
+                    <Copy className="h-3 w-3" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-[10px]">Copy</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            {isUser && onEdit && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button onClick={() => { setEditText(content); setEditing(true); }} className="rounded p-1 text-muted-foreground/60 hover:text-foreground transition-colors">
+                      <Edit2 className="h-3 w-3" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-[10px]">Edit</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {onDelete && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button onClick={() => onDelete(id)} className="rounded p-1 text-muted-foreground/60 hover:text-destructive transition-colors">
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-[10px]">Delete</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {!isUser && onRegenerate && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button onClick={() => onRegenerate(id)} className="rounded p-1 text-muted-foreground/60 hover:text-foreground transition-colors">
+                      <RefreshCw className="h-3 w-3" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-[10px]">Regenerate</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {onBookmark && !isUser && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button onClick={() => onBookmark(id)} className={cn("rounded p-1 transition-colors", bookmarked ? "text-amber-500" : "text-muted-foreground/60 hover:text-foreground")}>
+                      <Bookmark className="h-3 w-3" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-[10px]">{bookmarked ? "Unbookmark" : "Bookmark"}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {onSpeak && !isUser && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button onClick={() => onSpeak(id, content)} className="rounded p-1 text-muted-foreground/60 hover:text-foreground transition-colors">
+                      <Volume2 className="h-3 w-3" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-[10px]">Speak</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+
+          {editing ? (
+            <div className="space-y-2">
+              <textarea
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+                className="w-full resize-none rounded-lg border bg-background p-2 text-sm outline-none focus:ring-1 focus:ring-primary"
+                rows={3}
+                autoFocus
+              />
+              <div className="flex gap-1.5 justify-end">
+                <button
+                  onClick={() => setEditing(false)}
+                  className="rounded-md px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  className="rounded-md px-2 py-1 text-[11px] bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          ) : isUser ? (
             <p className="whitespace-pre-wrap">{content}</p>
           ) : (
             <div className="prose prose-sm dark:prose-invert max-w-none prose-pre:p-0 prose-code:before:content-none prose-code:after:content-none">
               <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeHighlight]}
+                remarkPlugins={[remarkGfm, remarkMath]}
+                rehypePlugins={[rehypeHighlight, rehypeKatex]}
                 components={{
                   code({ className, children, ...props }) {
                     const isInline = !className;
@@ -176,6 +318,10 @@ const ChatMessage = memo(function ChatMessage({ id, role, content, sources, isSt
                           {children}
                         </code>
                       );
+                    }
+                    const lang = (className ?? "").replace("language-", "");
+                    if (lang === "mermaid") {
+                      return <MermaidDiagram code={String(children ?? "")} />;
                     }
                     return <CodeBlock className={className} {...props}>{children}</CodeBlock>;
                   },
@@ -190,6 +336,22 @@ const ChatMessage = memo(function ChatMessage({ id, role, content, sources, isSt
                   },
                   ol({ children }) {
                     return <ol className="mb-2 list-decimal pl-5 space-y-1">{children}</ol>;
+                  },
+                  table({ children }) {
+                    return (
+                      <div className="my-3 overflow-x-auto rounded-lg border">
+                        <table className="min-w-full divide-y text-sm">{children}</table>
+                      </div>
+                    );
+                  },
+                  thead({ children }) {
+                    return <thead className="bg-muted/50">{children}</thead>;
+                  },
+                  th({ children }) {
+                    return <th className="px-3 py-2 text-left font-medium text-muted-foreground">{children}</th>;
+                  },
+                  td({ children }) {
+                    return <td className="px-3 py-2">{children}</td>;
                   },
                   a({ href, children }) {
                     return (
@@ -230,7 +392,43 @@ const ChatMessage = memo(function ChatMessage({ id, role, content, sources, isSt
           </motion.div>
         )}
 
-        {!isUser && !isStreaming && <FeedbackButtons messageId={messageId} />}
+        {!isUser && !isStreaming && (
+          <div className="mt-3 flex items-center gap-1.5">
+            <span className="mr-1 text-[11px] text-muted-foreground/50">Was this helpful?</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => handleRate("up")}
+                    className={cn(
+                      "rounded-md p-1 transition-colors",
+                      propRating === "up" ? "text-emerald-500" : "text-muted-foreground/40 hover:text-muted-foreground",
+                    )}
+                  >
+                    <ThumbsUp className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Helpful</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => handleRate("down")}
+                    className={cn(
+                      "rounded-md p-1 transition-colors",
+                      propRating === "down" ? "text-red-500" : "text-muted-foreground/40 hover:text-muted-foreground",
+                    )}
+                  >
+                    <ThumbsDown className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Not helpful</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
       </div>
     </motion.div>
   );

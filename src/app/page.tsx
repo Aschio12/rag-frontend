@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FileText, MessageSquareOff, Sparkles } from "lucide-react";
 
@@ -11,7 +11,7 @@ import DocumentUpload from "@/components/DocumentUpload";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { sendMessage, sendMessageStream } from "@/lib/api";
+import { sendMessageStream } from "@/lib/api";
 import {
   type Conversation,
   type Message,
@@ -36,23 +36,25 @@ export default function Home() {
   const [activeView, setActiveView] = useState("chats");
   const [docRefreshKey, setDocRefreshKey] = useState(0);
   const [streamingContent, setStreamingContent] = useState("");
+  const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const streamRef = useRef<AbortController | null>(null);
 
-  const activeConversation = conversations.find((c) => c.id === activeId) || null;
+  const activeConversation = useMemo(() => conversations.find((c) => c.id === activeId) || null, [conversations, activeId]);
   const messages = activeConversation?.messages || [];
-  const loading = streamRef.current !== null;
 
   useEffect(() => {
     const stored = loadConversations();
     if (stored.length > 0) {
-      setConversations(stored);
+      queueMicrotask(() => setConversations(stored));
       const active = loadActiveConversationId();
-      if (active && stored.some((c) => c.id === active)) {
-        setActiveId(active);
-      } else {
-        setActiveId(stored[0].id);
-      }
+      queueMicrotask(() => {
+        if (active && stored.some((c) => c.id === active)) {
+          setActiveId(active);
+        } else {
+          setActiveId(stored[0].id);
+        }
+      });
     }
   }, []);
 
@@ -66,7 +68,7 @@ export default function Home() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streamingContent]);
+  }, [activeConversation?.messages, streamingContent]);
 
   const updateConversation = useCallback((convId: string, updater: (c: Conversation) => Conversation) => {
     setConversations((prev) => prev.map((c) => (c.id === convId ? updater(c) : c)));
@@ -111,6 +113,7 @@ export default function Home() {
     }));
 
     const controller = new AbortController();
+    setLoading(true);
     streamRef.current = controller;
     setStreamingContent("");
 
@@ -147,6 +150,7 @@ export default function Home() {
         setStreamingContent("");
       }
     } finally {
+      setLoading(false);
       streamRef.current = null;
     }
   }, [activeId, updateConversation]);
@@ -165,6 +169,120 @@ export default function Home() {
     setConversations((prev) => [conv, ...prev]);
     setActiveId(conv.id);
     setActiveView("chats");
+  }, []);
+
+  const handleEditMessage = useCallback((msgId: string, newContent: string) => {
+    if (!activeId) return;
+    updateConversation(activeId, (c) => ({
+      ...c,
+      messages: c.messages.map((m) =>
+        m.id === msgId ? { ...m, content: newContent } : m,
+      ),
+      updatedAt: Date.now(),
+    }));
+  }, [activeId, updateConversation]);
+
+  const handleDeleteMessage = useCallback((msgId: string) => {
+    if (!activeId) return;
+    updateConversation(activeId, (c) => ({
+      ...c,
+      messages: c.messages.filter((m) => m.id !== msgId),
+      updatedAt: Date.now(),
+    }));
+  }, [activeId, updateConversation]);
+
+  const handleRegenerate = useCallback(async (msgId: string) => {
+    if (!activeId) return;
+    const conv = conversations.find((c) => c.id === activeId);
+    if (!conv) return;
+    const msgIndex = conv.messages.findIndex((m) => m.id === msgId);
+    if (msgIndex < 0 || msgIndex === 0) return;
+    const userMsg = conv.messages[msgIndex - 1];
+    if (userMsg.role !== "user") return;
+
+    updateConversation(activeId, (c) => ({
+      ...c,
+      messages: c.messages.map((m) =>
+        m.id === msgId ? { ...m, content: "" } : m,
+      ),
+      updatedAt: Date.now(),
+    }));
+
+    const controller = new AbortController();
+    setLoading(true);
+    streamRef.current = controller;
+    setStreamingContent("");
+
+    try {
+      let accumulated = "";
+      const stream = sendMessageStream({ message: userMsg.content });
+      for await (const chunk of stream) {
+        if (controller.signal.aborted) break;
+        accumulated += chunk;
+        setStreamingContent(accumulated);
+      }
+      if (!controller.signal.aborted) {
+        updateConversation(activeId, (c) => ({
+          ...c,
+          messages: c.messages.map((m) =>
+            m.id === msgId ? { ...m, content: accumulated } : m,
+          ),
+          updatedAt: Date.now(),
+        }));
+        setStreamingContent("");
+      }
+    } catch {
+      if (!controller.signal.aborted) {
+        updateConversation(activeId, (c) => ({
+          ...c,
+          messages: c.messages.map((m) =>
+            m.id === msgId
+              ? { ...m, content: "Sorry, something went wrong. Please try again." }
+              : m,
+          ),
+          updatedAt: Date.now(),
+        }));
+        setStreamingContent("");
+      }
+    } finally {
+      setLoading(false);
+      streamRef.current = null;
+    }
+  }, [activeId, conversations, updateConversation]);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleCopyMessage = useCallback((msgId: string) => {
+  }, []);
+
+  const handleBookmarkMessage = useCallback((msgId: string) => {
+    if (!activeId) return;
+    updateConversation(activeId, (c) => ({
+      ...c,
+      messages: c.messages.map((m) =>
+        m.id === msgId ? { ...m, bookmarked: !m.bookmarked } : m,
+      ),
+    }));
+  }, [activeId, updateConversation]);
+
+  const handleRateMessage = useCallback((msgId: string, rating: "up" | "down" | null) => {
+    if (!activeId) return;
+    updateConversation(activeId, (c) => ({
+      ...c,
+      messages: c.messages.map((m) =>
+        m.id === msgId ? { ...m, rating } : m,
+      ),
+    }));
+  }, [activeId, updateConversation]);
+
+  const handleSpeak = useCallback((_msgId: string, text: string) => {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      window.speechSynthesis.speak(utterance);
+    }
   }, []);
 
   return (
@@ -254,9 +372,18 @@ export default function Home() {
                           key={m.id}
                           id={m.id}
                           role={m.role}
-                          content={m.content}
+                          content={m.content || streamingContent}
                           sources={m.sources}
                           isStreaming={m.content === "" && loading}
+                          bookmarked={m.bookmarked}
+                          rating={m.rating}
+                          onEdit={handleEditMessage}
+                          onDelete={handleDeleteMessage}
+                          onRegenerate={handleRegenerate}
+                          onCopy={handleCopyMessage}
+                          onBookmark={handleBookmarkMessage}
+                          onRate={handleRateMessage}
+                          onSpeak={handleSpeak}
                         />
                       ))}
                       {loading && messages[messages.length - 1]?.content !== "" && (
