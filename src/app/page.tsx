@@ -349,6 +349,21 @@ export default function Home() {
     }));
   }, [activeId, updateConversation]);
 
+  const [showShareDialog, setShowShareDialog] = useState(false);
+
+  const handleShareChat = useCallback(() => {
+    setShowShareDialog(true);
+  }, []);
+
+  const handleShareCopy = useCallback(() => {
+    if (!activeConversation) return;
+    const text = activeConversation.messages.map((m) => {
+      return `[${m.role.toUpperCase()}]\n${m.content}`;
+    }).join("\n\n---\n\n");
+    navigator.clipboard.writeText(text);
+    setShowShareDialog(false);
+  }, [activeConversation]);
+
   const handleExportChat = useCallback((format: "json" | "markdown" | "txt") => {
     if (!activeConversation) return;
     const conv = activeConversation;
@@ -421,6 +436,7 @@ export default function Home() {
           onNewChat={handleNewChat}
           conversation={activeConversation}
           onExport={handleExportChat}
+          onShare={handleShareChat}
         />
 
         <AnimatePresence mode="wait">
@@ -519,6 +535,35 @@ export default function Home() {
               </div>
 
               <ChatInput onSend={handleSend} disabled={loading} />
+
+              {showShareDialog && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="mx-4 w-full max-w-sm rounded-xl border bg-background p-6 shadow-xl"
+                  >
+                    <h3 className="mb-2 text-sm font-semibold">Share Chat</h3>
+                    <p className="mb-4 text-xs text-muted-foreground">
+                      Copy this conversation as formatted text to share.
+                    </p>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => setShowShareDialog(false)}
+                        className="rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleShareCopy}
+                        className="rounded-lg bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:opacity-90 transition-opacity"
+                      >
+                        Copy to Clipboard
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
             </motion.div>
           ) : activeView === "documents" ? (
             <motion.div
