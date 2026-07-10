@@ -595,6 +595,17 @@ export default function Home() {
                           </div>
                         </div>
                       )}
+                      {userScrolled && messages.length > 0 && (
+                        <motion.button
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          onClick={() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); setUserScrolled(false); }}
+                          className="sticky bottom-2 left-1/2 z-10 mx-auto -translate-x-1/2 rounded-full border bg-background px-3 py-1.5 text-[11px] text-muted-foreground shadow-md hover:bg-accent transition-colors"
+                        >
+                          ↓ Scroll to bottom
+                        </motion.button>
+                      )}
                       {!loading && messages.length > 0 && messages[messages.length - 1]?.role === "assistant" && messages[messages.length - 1]?.content && (
                         <motion.div
                           initial={{ opacity: 0, y: 8 }}
