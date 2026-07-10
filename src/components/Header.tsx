@@ -2,7 +2,7 @@
 
 import { type Dispatch, type SetStateAction } from "react";
 import { motion } from "framer-motion";
-import { PanelLeft, Plus, Trash2 } from "lucide-react";
+import { Download, PanelLeft, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -15,6 +15,7 @@ interface HeaderProps {
   messagesCount: number;
   onClear: () => void;
   onNewChat?: () => void;
+  onExport?: (format: "json" | "markdown" | "txt") => void;
   conversation?: Conversation | null;
 }
 
@@ -37,6 +38,7 @@ export default function Header({
   messagesCount,
   onClear,
   onNewChat,
+  onExport,
   conversation,
 }: HeaderProps) {
   return (
@@ -73,6 +75,23 @@ export default function Header({
       </div>
 
       <div className="flex items-center gap-1">
+        {onExport && messagesCount > 0 && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onExport("markdown")}
+                  className="text-muted-foreground"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Export chat</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
         {onNewChat && (
           <TooltipProvider>
             <Tooltip>

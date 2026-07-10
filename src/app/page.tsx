@@ -349,6 +349,34 @@ export default function Home() {
     }));
   }, [activeId, updateConversation]);
 
+  const handleExportChat = useCallback((format: "json" | "markdown" | "txt") => {
+    if (!activeConversation) return;
+    const conv = activeConversation;
+    let content = "";
+    const filename = conv.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+
+    if (format === "json") {
+      content = JSON.stringify(conv.messages, null, 2);
+    } else if (format === "markdown") {
+      content = conv.messages.map((m) => {
+        const role = m.role === "user" ? "**You**" : "**Assistant**";
+        return `${role}:\n\n${m.content}\n\n---\n`;
+      }).join("\n");
+    } else {
+      content = conv.messages.map((m) => {
+        return `[${m.role.toUpperCase()}]\n${m.content}\n`;
+      }).join("\n");
+    }
+
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${filename}.${format === "json" ? "json" : format === "markdown" ? "md" : "txt"}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [activeConversation]);
+
   const handleSpeak = useCallback((_msgId: string, text: string) => {
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
@@ -392,6 +420,7 @@ export default function Home() {
           onClear={handleClear}
           onNewChat={handleNewChat}
           conversation={activeConversation}
+          onExport={handleExportChat}
         />
 
         <AnimatePresence mode="wait">
