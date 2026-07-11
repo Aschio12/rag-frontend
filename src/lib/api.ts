@@ -318,6 +318,65 @@ export async function relatedQuestions(query: string, answerText: string) {
   return res.json();
 }
 
+// ---- Agentic AI Chat ----
+export interface AgentStepEvent {
+  event: "step_start" | "step_complete" | "step_error" | "complete";
+  step?: string;
+  label?: string;
+  description?: string;
+  duration?: number;
+  error?: string;
+  answer?: string;
+  sources?: Source[];
+  plan?: string;
+  critique?: string;
+  verification?: Array<{ claim: string; verdict: string; supported: boolean }>;
+  search_queries?: string[];
+  summary?: { plan_executed: boolean; searches_performed: number; sources_found: number; critique_applied: boolean; claims_verified: number };
+  total_time?: number;
+}
+
+export async function* sendAgenticMessage(params: {
+  message: string;
+  conversation_id?: string;
+  hybrid?: boolean;
+}): AsyncGenerator<AgentStepEvent> {
+  const res = await fetch(`${API_BASE}/api/v1/agent/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: params.message,
+      conversation_id: params.conversation_id || "",
+      hybrid: params.hybrid || false,
+      top_k: 5,
+    }),
+  });
+  if (!res.ok) throw new Error(`Agent chat error: ${res.status}`);
+
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error("No response body");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+    for (const line of lines) {
+      if (line.startsWith("data: ")) {
+        const data = line.slice(6);
+        if (data === "[DONE]") return;
+        try {
+          yield JSON.parse(data) as AgentStepEvent;
+        } catch { /* skip malformed */ }
+      }
+    }
+  }
+}
+
 // ---- Legacy endpoints ----
 export async function legacyListDocuments() {
   const res = await fetch(`${API_BASE}/api/v1/old-documents`);
