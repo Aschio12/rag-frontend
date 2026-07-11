@@ -305,6 +305,10 @@ export default function Home() {
         e.preventDefault();
         setHybridSearch((prev) => { const next = !prev; localStorage.setItem("hybridSearch", String(next)); return next; });
       }
+      if ((e.metaKey || e.ctrlKey) && e.key === "a") {
+        e.preventDefault();
+        setAgenticMode((prev) => { const next = !prev; localStorage.setItem("agenticMode", String(next)); return next; });
+      }
     };
     window.addEventListener("keydown", handleHybridKey);
     return () => window.removeEventListener("keydown", handleHybridKey);
