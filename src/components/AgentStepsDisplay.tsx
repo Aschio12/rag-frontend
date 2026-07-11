@@ -11,6 +11,7 @@ import {
   FileSearch,
   ListChecks,
   Search,
+  ScrollText,
   Sparkles,
   XCircle,
 } from "lucide-react";
@@ -45,12 +46,15 @@ const stepColors: Record<string, string> = {
 
 export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   if (steps.length === 0) return null;
 
   const lastStep = steps[steps.length - 1];
   const isComplete = lastStep?.event === "complete";
   const hasError = steps.some((s) => s.event === "step_error");
+  const plan = isComplete ? lastStep?.plan : undefined;
+  const verificationResults = isComplete ? lastStep?.verification : undefined;
 
   return (
     <div className="mb-3 rounded-xl border bg-muted/20">
@@ -144,6 +148,60 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
                 );
               })}
             </div>
+
+            {/* Plan & Details */}
+            {isComplete && (plan || verificationResults) && (
+              <div className="border-t border-muted/20 px-3 py-2">
+                <button
+                  onClick={() => setShowDetails(!showDetails)}
+                  className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 hover:text-foreground transition-colors"
+                >
+                  <ScrollText className="h-3 w-3" />
+                  {showDetails ? "Hide" : "Show"} agent reasoning details
+                  {showDetails ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                </button>
+                <AnimatePresence>
+                  {showDetails && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="mt-2 space-y-2 overflow-hidden"
+                    >
+                      {plan && (
+                        <div>
+                          <p className="text-[10px] font-medium text-violet-500 mb-1">Plan</p>
+                          <pre className="whitespace-pre-wrap text-[10px] text-muted-foreground/80 bg-muted/30 rounded-lg p-2">
+                            {plan}
+                          </pre>
+                        </div>
+                      )}
+                      {verificationResults && verificationResults.length > 0 && (
+                        <div>
+                          <p className="text-[10px] font-medium text-emerald-500 mb-1">Verification</p>
+                          <div className="space-y-1">
+                            {verificationResults.map((v, i) => (
+                              <div
+                                key={i}
+                                className="rounded-lg bg-muted/30 px-2 py-1.5 text-[10px]"
+                              >
+                                <p className="text-muted-foreground/80">Claim: {v.claim}</p>
+                                <p className={cn(
+                                  "mt-0.5",
+                                  v.supported ? "text-emerald-500" : "text-amber-500",
+                                )}>
+                                  {v.verdict}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
