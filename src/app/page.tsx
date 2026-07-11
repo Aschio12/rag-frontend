@@ -13,7 +13,7 @@ import KnowledgeBaseManager from "@/components/KnowledgeBaseManager";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { sendMessageStream, getRelatedQuestions } from "@/lib/api";
+import { sendMessageStream, getRelatedQuestions, sendAgenticMessage } from "@/lib/api";
 import RelatedQuestions from "@/components/RelatedQuestions";
 import { useToast } from "@/components/Toast";
 import {
@@ -60,6 +60,11 @@ export default function Home() {
   const [sourceViewerOpen, setSourceViewerOpen] = useState(false);
   const [relatedQuestions, setRelatedQuestions] = useState<string[]>([]);
   const [relatedLoading, setRelatedLoading] = useState(false);
+  const [agenticMode, setAgenticMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("agenticMode") === "true";
+  });
+  const [agentSteps, setAgentSteps] = useState<Record<string, import("@/lib/api").AgentStepEvent[]>>({});
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [sourceViewerData, setSourceViewerData] = useState<any[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -185,30 +190,65 @@ export default function Home() {
     setStreamingContent("");
 
     try {
-      let accumulated = "";
-      const stream = sendMessageStream({ message: text, hybrid: hybridSearch });
-      for await (const chunk of stream) {
-        if (controller.signal.aborted) break;
-        accumulated += chunk;
-        setStreamingContent(accumulated);
-      }
-
-      if (!controller.signal.aborted) {
-        updateConversation(convId, (c) => ({
-          ...c,
-          messages: c.messages.map((m) =>
-            m.id === assistantId ? { ...m, content: accumulated } : m,
-          ),
-          updatedAt: Date.now(),
-        }));
+      if (agenticMode) {
+        const steps: import("@/lib/api").AgentStepEvent[] = [];
+        let finalAnswer = "";
+        const stream = sendAgenticMessage({ message: text, hybrid: hybridSearch });
+        for await (const event of stream) {
+          if (controller.signal.aborted) break;
+          steps.push(event);
+          setAgentSteps((prev) => ({ ...prev, [assistantId]: [...steps] }));
+          if (event.event === "complete") {
+            finalAnswer = event.answer || "";
+            if (finalAnswer) {
+              updateConversation(convId, (c) => ({
+                ...c,
+                messages: c.messages.map((m) =>
+                  m.id === assistantId ? { ...m, content: finalAnswer, sources: event.sources || [] } : m,
+                ),
+                updatedAt: Date.now(),
+              }));
+              setRelatedQuestions(event.search_queries || []);
+            }
+          } else {
+            setStreamingContent(`Agent step: ${event.label || event.step || "Processing..."}`);
+          }
+        }
+        if (!controller.signal.aborted && !finalAnswer) {
+          updateConversation(convId, (c) => ({
+            ...c,
+            messages: c.messages.map((m) =>
+              m.id === assistantId ? { ...m, content: "Agent processing complete." } : m,
+            ),
+            updatedAt: Date.now(),
+          }));
+        }
         setStreamingContent("");
-        // Fetch related questions after successful response
-        if (accumulated) {
-          setRelatedLoading(true);
-          getRelatedQuestions({ query: text, context: accumulated })
-            .then(res => setRelatedQuestions(res.questions || []))
-            .catch(() => {})
-            .finally(() => setRelatedLoading(false));
+      } else {
+        let accumulated = "";
+        const stream = sendMessageStream({ message: text, hybrid: hybridSearch });
+        for await (const chunk of stream) {
+          if (controller.signal.aborted) break;
+          accumulated += chunk;
+          setStreamingContent(accumulated);
+        }
+
+        if (!controller.signal.aborted) {
+          updateConversation(convId, (c) => ({
+            ...c,
+            messages: c.messages.map((m) =>
+              m.id === assistantId ? { ...m, content: accumulated } : m,
+            ),
+            updatedAt: Date.now(),
+          }));
+          setStreamingContent("");
+          if (accumulated) {
+            setRelatedLoading(true);
+            getRelatedQuestions({ query: text, context: accumulated })
+              .then(res => setRelatedQuestions(res.questions || []))
+              .catch(() => {})
+              .finally(() => setRelatedLoading(false));
+          }
         }
       }
     } catch {
@@ -228,7 +268,7 @@ export default function Home() {
       setLoading(false);
       streamRef.current = null;
     }
-  }, [activeId, updateConversation, hybridSearch]);
+  }, [activeId, updateConversation, hybridSearch, agenticMode]);
 
   const handleClear = useCallback(() => {
     setConversations([]);
@@ -313,28 +353,64 @@ export default function Home() {
     setStreamingContent("");
 
     try {
-      let accumulated = "";
-      const stream = sendMessageStream({ message: userMsg.content, hybrid: hybridSearch });
-      for await (const chunk of stream) {
-        if (controller.signal.aborted) break;
-        accumulated += chunk;
-        setStreamingContent(accumulated);
-      }
-      if (!controller.signal.aborted) {
-        updateConversation(activeId, (c) => ({
-          ...c,
-          messages: c.messages.map((m) =>
-            m.id === msgId ? { ...m, content: accumulated } : m,
-          ),
-          updatedAt: Date.now(),
-        }));
+      if (agenticMode) {
+        const steps: import("@/lib/api").AgentStepEvent[] = [];
+        let finalAnswer = "";
+        const stream = sendAgenticMessage({ message: userMsg.content, hybrid: hybridSearch });
+        for await (const event of stream) {
+          if (controller.signal.aborted) break;
+          steps.push(event);
+          setAgentSteps((prev) => ({ ...prev, [msgId]: [...steps] }));
+          if (event.event === "complete") {
+            finalAnswer = event.answer || "";
+            if (finalAnswer) {
+              updateConversation(activeId, (c) => ({
+                ...c,
+                messages: c.messages.map((m) =>
+                  m.id === msgId ? { ...m, content: finalAnswer, sources: event.sources || [] } : m,
+                ),
+                updatedAt: Date.now(),
+              }));
+              setRelatedQuestions(event.search_queries || []);
+            }
+          } else {
+            setStreamingContent(`Agent step: ${event.label || event.step || "Processing..."}`);
+          }
+        }
+        if (!controller.signal.aborted && !finalAnswer) {
+          updateConversation(activeId, (c) => ({
+            ...c,
+            messages: c.messages.map((m) =>
+              m.id === msgId ? { ...m, content: "Agent processing complete." } : m,
+            ),
+            updatedAt: Date.now(),
+          }));
+        }
         setStreamingContent("");
-        if (accumulated) {
-          setRelatedLoading(true);
-          getRelatedQuestions({ query: userMsg.content, context: accumulated })
-            .then(res => setRelatedQuestions(res.questions || []))
-            .catch(() => {})
-            .finally(() => setRelatedLoading(false));
+      } else {
+        let accumulated = "";
+        const stream = sendMessageStream({ message: userMsg.content, hybrid: hybridSearch });
+        for await (const chunk of stream) {
+          if (controller.signal.aborted) break;
+          accumulated += chunk;
+          setStreamingContent(accumulated);
+        }
+        if (!controller.signal.aborted) {
+          updateConversation(activeId, (c) => ({
+            ...c,
+            messages: c.messages.map((m) =>
+              m.id === msgId ? { ...m, content: accumulated } : m,
+            ),
+            updatedAt: Date.now(),
+          }));
+          setStreamingContent("");
+          if (accumulated) {
+            setRelatedLoading(true);
+            getRelatedQuestions({ query: userMsg.content, context: accumulated })
+              .then(res => setRelatedQuestions(res.questions || []))
+              .catch(() => {})
+              .finally(() => setRelatedLoading(false));
+          }
         }
       }
     } catch {
@@ -354,7 +430,7 @@ export default function Home() {
       setLoading(false);
       streamRef.current = null;
     }
-  }, [activeId, conversations, updateConversation, hybridSearch]);
+  }, [activeId, conversations, updateConversation, hybridSearch, agenticMode]);
 
   const handleFollowUp = useCallback((question: string) => {
     setRelatedQuestions([]);
@@ -621,6 +697,7 @@ export default function Home() {
                           role={m.role}
                           content={m.content || streamingContent}
                           sources={m.sources}
+                          agentSteps={agentSteps[m.id]}
                           isStreaming={m.content === "" && loading}
                           bookmarked={m.bookmarked}
                           rating={m.rating}
@@ -694,6 +771,8 @@ export default function Home() {
                 disabled={loading}
                 hybrid={hybridSearch}
                 onToggleHybrid={() => setHybridSearch((prev) => { const next = !prev; localStorage.setItem("hybridSearch", String(next)); return next; })}
+                agentic={agenticMode}
+                onToggleAgentic={() => setAgenticMode((prev) => { const next = !prev; localStorage.setItem("agenticMode", String(next)); return next; })}
               />
             </motion.div>
           ) : activeView === "knowledge" ? (

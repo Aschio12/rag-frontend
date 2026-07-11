@@ -12,9 +12,11 @@ interface Props {
   placeholder?: string;
   hybrid?: boolean;
   onToggleHybrid?: () => void;
+  agentic?: boolean;
+  onToggleAgentic?: () => void;
 }
 
-export default function ChatInput({ onSend, disabled, placeholder, hybrid, onToggleHybrid }: Props) {
+export default function ChatInput({ onSend, disabled, placeholder, hybrid, onToggleHybrid, agentic, onToggleAgentic }: Props) {
   const [input, setInput] = useState("");
   const textRef = useRef<HTMLTextAreaElement>(null);
 
@@ -74,6 +76,21 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
           />
         </div>
 
+        {onToggleAgentic && (
+          <button
+            type="button"
+            onClick={onToggleAgentic}
+            className={cn(
+              "shrink-0 rounded-lg px-2 py-1.5 text-[10px] font-medium transition-colors",
+              agentic
+                ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
+                : "bg-muted/30 text-muted-foreground/50 hover:text-muted-foreground",
+            )}
+            title={agentic ? "Agentic AI mode (multi-agent collaboration)" : "Standard mode"}
+          >
+            {agentic ? "🤖 Agent" : "💬 Chat"}
+          </button>
+        )}
         {onToggleHybrid && (
           <button
             type="button"
