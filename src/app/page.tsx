@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { FileText, MessageSquareOff, Sparkles } from "lucide-react";
+import { FileText, Library, MessageSquareOff, Sparkles } from "lucide-react";
 
 import ChatInput from "@/components/ChatInput";
 import ChatMessage from "@/components/ChatMessage";
 import DocumentList from "@/components/DocumentList";
 import DocumentUpload from "@/components/DocumentUpload";
 import SourceViewer from "@/components/SourceViewer";
+import KnowledgeBaseManager from "@/components/KnowledgeBaseManager";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
@@ -653,40 +654,27 @@ export default function Home() {
                 hybrid={hybridSearch}
                 onToggleHybrid={() => setHybridSearch(!hybridSearch)}
               />
-              <SourceViewer
-                sources={sourceViewerData}
-                open={sourceViewerOpen}
-                onClose={() => setSourceViewerOpen(false)}
-              />
-
-              {showShareDialog && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                  <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="mx-4 w-full max-w-sm rounded-xl border bg-background p-6 shadow-xl"
-                  >
-                    <h3 className="mb-2 text-sm font-semibold">Share Chat</h3>
-                    <p className="mb-4 text-xs text-muted-foreground">
-                      Copy this conversation as formatted text to share.
-                    </p>
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => setShowShareDialog(false)}
-                        className="rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent transition-colors"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleShareCopy}
-                        className="rounded-lg bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:opacity-90 transition-opacity"
-                      >
-                        Copy to Clipboard
-                      </button>
-                    </div>
-                  </motion.div>
+            </motion.div>
+          ) : activeView === "knowledge" ? (
+            <motion.div
+              key="knowledge"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex-1 overflow-y-auto scrollbar-thin"
+            >
+              <div className="mx-auto max-w-2xl space-y-6 px-4 py-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-sm">
+                    <Library className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold">Knowledge Bases</h2>
+                    <p className="text-xs text-muted-foreground">Manage collections and explore knowledge graphs</p>
+                  </div>
                 </div>
-              )}
+                <KnowledgeBaseManager />
+              </div>
             </motion.div>
           ) : activeView === "documents" ? (
             <motion.div
@@ -736,6 +724,41 @@ export default function Home() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        <SourceViewer
+          sources={sourceViewerData}
+          open={sourceViewerOpen}
+          onClose={() => setSourceViewerOpen(false)}
+        />
+
+        {showShareDialog && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="mx-4 w-full max-w-sm rounded-xl border bg-background p-6 shadow-xl"
+            >
+              <h3 className="mb-2 text-sm font-semibold">Share Chat</h3>
+              <p className="mb-4 text-xs text-muted-foreground">
+                Copy this conversation as formatted text to share.
+              </p>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setShowShareDialog(false)}
+                  className="rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleShareCopy}
+                  className="rounded-lg bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:opacity-90 transition-opacity"
+                >
+                  Copy to Clipboard
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </div>
     </div>
   );
