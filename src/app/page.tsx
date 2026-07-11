@@ -218,7 +218,7 @@ export default function Home() {
               setRelatedQuestions(event.search_queries || []);
             }
           } else {
-            setStreamingContent(`Agent step: ${event.label || event.step || "Processing..."}`);
+            setStreamingContent(`🤖 ${event.label || "Processing"}...`);
           }
         }
         if (!controller.signal.aborted && !finalAnswer) {
@@ -396,7 +396,7 @@ export default function Home() {
               setRelatedQuestions(event.search_queries || []);
             }
           } else {
-            setStreamingContent(`Agent step: ${event.label || event.step || "Processing..."}`);
+            setStreamingContent(`🤖 ${event.label || "Processing"}...`);
           }
         }
         if (!controller.signal.aborted && !finalAnswer) {
