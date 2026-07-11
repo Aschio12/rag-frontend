@@ -209,7 +209,7 @@ const ChatMessage = memo(function ChatMessage({
         </AvatarFallback>
       </Avatar>
 
-      <div className={cn("flex max-w-[85%] md:max-w-[75%] flex-col", isUser ? "items-end" : "items-start")}>
+      <div className={cn("flex max-w-[90%] md:max-w-[80%] flex-col", isUser ? "items-end" : "items-start")}>
         <div
           className={cn(
             "rounded-2xl px-4 py-2.5 text-sm leading-relaxed relative",
@@ -412,10 +412,38 @@ const ChatMessage = memo(function ChatMessage({
               <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
                 {sources.length} source{sources.length > 1 ? "s" : ""}
               </Badge>
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground/60">
+                Click to view details
+              </Badge>
             </div>
-            {sources.map((s, i) => (
-              <SourceBadge key={i} source={s} index={i} />
+            {sources.slice(0, 3).map((s, i) => (
+              <button
+                key={i}
+                onClick={() => window.dispatchEvent(new CustomEvent("open-source", { detail: { sources, index: i } }))}
+                className="w-full text-left rounded-lg border bg-muted/30 p-2.5 text-xs hover:bg-accent/50 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium text-muted-foreground flex items-center gap-1">
+                    {s.filename || `Source #${i + 1}`}
+                    {s.page_number ? <span className="text-[9px] text-muted-foreground/50">p.{s.page_number}</span> : null}
+                  </span>
+                  <span className="shrink-0 rounded bg-muted px-1 py-0.5 text-[9px] font-medium" style={{
+                    color: s.score > 0.8 ? '#10b981' : s.score > 0.5 ? '#f59e0b' : '#ef4444'
+                  }}>
+                    {(s.score * 100).toFixed(0)}%
+                  </span>
+                </div>
+                <p className="mt-1 leading-relaxed text-muted-foreground/80 line-clamp-2">{s.text}</p>
+              </button>
             ))}
+            {sources.length > 3 && (
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent("open-source", { detail: { sources, index: 0 } }))}
+                className="w-full rounded-lg border border-dashed border-muted-foreground/20 p-2 text-[10px] text-muted-foreground/50 hover:text-foreground hover:bg-accent/30 transition-colors"
+              >
+                + {sources.length - 3} more sources
+              </button>
+            )}
           </motion.div>
         )}
 
