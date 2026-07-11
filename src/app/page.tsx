@@ -13,7 +13,8 @@ import KnowledgeBaseManager from "@/components/KnowledgeBaseManager";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { sendMessageStream } from "@/lib/api";
+import { sendMessageStream, getRelatedQuestions } from "@/lib/api";
+import RelatedQuestions from "@/components/RelatedQuestions";
 import { useToast } from "@/components/Toast";
 import {
   type Conversation,
@@ -54,6 +55,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [hybridSearch, setHybridSearch] = useState(false);
   const [sourceViewerOpen, setSourceViewerOpen] = useState(false);
+  const [relatedQuestions, setRelatedQuestions] = useState<string[]>([]);
+  const [relatedLoading, setRelatedLoading] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [sourceViewerData, setSourceViewerData] = useState<any[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -196,6 +199,14 @@ export default function Home() {
           updatedAt: Date.now(),
         }));
         setStreamingContent("");
+        // Fetch related questions after successful response
+        if (accumulated) {
+          setRelatedLoading(true);
+          getRelatedQuestions({ query: text, context: accumulated })
+            .then(res => setRelatedQuestions(res.questions || []))
+            .catch(() => {})
+            .finally(() => setRelatedLoading(false));
+        }
       }
     } catch {
       if (!controller.signal.aborted) {
@@ -305,6 +316,13 @@ export default function Home() {
           updatedAt: Date.now(),
         }));
         setStreamingContent("");
+        if (accumulated) {
+          setRelatedLoading(true);
+          getRelatedQuestions({ query: userMsg.content, context: accumulated })
+            .then(res => setRelatedQuestions(res.questions || []))
+            .catch(() => {})
+            .finally(() => setRelatedLoading(false));
+        }
       }
     } catch {
       if (!controller.signal.aborted) {
@@ -326,6 +344,7 @@ export default function Home() {
   }, [activeId, conversations, updateConversation, hybridSearch]);
 
   const handleFollowUp = useCallback((question: string) => {
+    setRelatedQuestions([]);
     handleSend(question);
   }, [handleSend]);
 
@@ -641,6 +660,15 @@ export default function Home() {
                             </button>
                           ))}
                         </motion.div>
+                      )}
+                      {!loading && (
+                        <div className="pl-10">
+                          <RelatedQuestions
+                            questions={relatedQuestions}
+                            onSelect={handleFollowUp}
+                            loading={relatedLoading}
+                          />
+                        </div>
                       )}
                       <div ref={bottomRef} />
                     </div>
