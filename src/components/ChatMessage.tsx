@@ -138,23 +138,24 @@ function TypingContent({ content }: { content: string }) {
   return <span>{content.slice(0, displayed)}<span className="animate-pulse">▊</span></span>;
 }
 
-const ChatMessage = memo(function ChatMessage({
-  id,
-  role,
-  content,
-  sources,
-  agentSteps,
-  isStreaming,
-  bookmarked,
-  rating: propRating,
-  onEdit,
-  onDelete,
-  onRegenerate,
-  onCopy,
-  onBookmark,
-  onRate,
-  onSpeak,
-}: Props) {
+const ChatMessage = memo(function ChatMessage(props: Props) {
+  const {
+    id,
+    role,
+    content,
+    sources,
+    agentSteps,
+    isStreaming,
+    bookmarked,
+    rating: propRating,
+    onEdit,
+    onDelete,
+    onRegenerate,
+    onCopy,
+    onBookmark,
+    onRate,
+    onSpeak,
+  } = props;
   const isUser = role === "user";
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(content);
