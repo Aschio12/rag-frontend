@@ -1,5 +1,7 @@
 import type { Source } from "./api";
 
+import type { AgentStepEvent } from "@/lib/api";
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
@@ -8,6 +10,8 @@ export interface Message {
   timestamp: number;
   bookmarked?: boolean;
   rating?: "up" | "down" | null;
+  isAgentic?: boolean;
+  agentSteps?: AgentStepEvent[];
 }
 
 export interface Conversation {

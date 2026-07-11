@@ -176,6 +176,7 @@ export default function Home() {
       role: "assistant",
       content: "",
       timestamp: Date.now(),
+      isAgentic: agenticMode,
     };
 
     updateConversation(convId, (c) => ({
@@ -190,7 +191,7 @@ export default function Home() {
     setStreamingContent("");
 
     try {
-      if (agenticMode) {
+        if (agenticMode) {
         const steps: import("@/lib/api").AgentStepEvent[] = [];
         let finalAnswer = "";
         const stream = sendAgenticMessage({ message: text, hybrid: hybridSearch });
@@ -204,7 +205,13 @@ export default function Home() {
               updateConversation(convId, (c) => ({
                 ...c,
                 messages: c.messages.map((m) =>
-                  m.id === assistantId ? { ...m, content: finalAnswer, sources: event.sources || [] } : m,
+                  m.id === assistantId ? {
+                    ...m,
+                    content: finalAnswer,
+                    sources: event.sources || [],
+                    isAgentic: true,
+                    agentSteps: steps,
+                  } : m,
                 ),
                 updatedAt: Date.now(),
               }));
@@ -218,7 +225,12 @@ export default function Home() {
           updateConversation(convId, (c) => ({
             ...c,
             messages: c.messages.map((m) =>
-              m.id === assistantId ? { ...m, content: "Agent processing complete." } : m,
+              m.id === assistantId ? {
+                ...m,
+                content: "Agent processing complete.",
+                isAgentic: true,
+                agentSteps: steps,
+              } : m,
             ),
             updatedAt: Date.now(),
           }));
@@ -371,7 +383,13 @@ export default function Home() {
               updateConversation(activeId, (c) => ({
                 ...c,
                 messages: c.messages.map((m) =>
-                  m.id === msgId ? { ...m, content: finalAnswer, sources: event.sources || [] } : m,
+                  m.id === msgId ? {
+                    ...m,
+                    content: finalAnswer,
+                    sources: event.sources || [],
+                    isAgentic: true,
+                    agentSteps: steps,
+                  } : m,
                 ),
                 updatedAt: Date.now(),
               }));
@@ -385,7 +403,12 @@ export default function Home() {
           updateConversation(activeId, (c) => ({
             ...c,
             messages: c.messages.map((m) =>
-              m.id === msgId ? { ...m, content: "Agent processing complete." } : m,
+              m.id === msgId ? {
+                ...m,
+                content: "Agent processing complete.",
+                isAgentic: true,
+                agentSteps: steps,
+              } : m,
             ),
             updatedAt: Date.now(),
           }));
