@@ -53,7 +53,10 @@ export default function Home() {
   const [docRefreshKey, setDocRefreshKey] = useState(0);
   const [streamingContent, setStreamingContent] = useState("");
   const [loading, setLoading] = useState(false);
-  const [hybridSearch, setHybridSearch] = useState(false);
+  const [hybridSearch, setHybridSearch] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("hybridSearch") === "true";
+  });
   const [sourceViewerOpen, setSourceViewerOpen] = useState(false);
   const [relatedQuestions, setRelatedQuestions] = useState<string[]>([]);
   const [relatedLoading, setRelatedLoading] = useState(false);
@@ -255,6 +258,16 @@ export default function Home() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+  useEffect(() => {
+    const handleHybridKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "h") {
+        e.preventDefault();
+        setHybridSearch((prev) => { const next = !prev; localStorage.setItem("hybridSearch", String(next)); return next; });
+      }
+    };
+    window.addEventListener("keydown", handleHybridKey);
+    return () => window.removeEventListener("keydown", handleHybridKey);
   }, []);
 
   const handleEditMessage = useCallback((msgId: string, newContent: string) => {
@@ -680,7 +693,7 @@ export default function Home() {
                 onSend={handleSend}
                 disabled={loading}
                 hybrid={hybridSearch}
-                onToggleHybrid={() => setHybridSearch(!hybridSearch)}
+                onToggleHybrid={() => setHybridSearch((prev) => { const next = !prev; localStorage.setItem("hybridSearch", String(next)); return next; })}
               />
             </motion.div>
           ) : activeView === "knowledge" ? (
