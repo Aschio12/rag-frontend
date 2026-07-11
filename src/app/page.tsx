@@ -13,7 +13,7 @@ import KnowledgeBaseManager from "@/components/KnowledgeBaseManager";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
-import { sendMessageStream, getRelatedQuestions, sendAgenticMessage } from "@/lib/api";
+import { sendMessageStream, relatedQuestions as getRelatedQuestions, sendAgenticMessage } from "@/lib/api";
 import RelatedQuestions from "@/components/RelatedQuestions";
 import { useToast } from "@/components/Toast";
 import {
@@ -256,7 +256,7 @@ export default function Home() {
           setStreamingContent("");
           if (accumulated) {
             setRelatedLoading(true);
-            getRelatedQuestions({ query: text, context: accumulated })
+            getRelatedQuestions(text, accumulated)
               .then(res => setRelatedQuestions(res.questions || []))
               .catch(() => {})
               .finally(() => setRelatedLoading(false));
@@ -433,7 +433,7 @@ export default function Home() {
           setStreamingContent("");
           if (accumulated) {
             setRelatedLoading(true);
-            getRelatedQuestions({ query: userMsg.content, context: accumulated })
+            getRelatedQuestions(userMsg.content, accumulated)
               .then(res => setRelatedQuestions(res.questions || []))
               .catch(() => {})
               .finally(() => setRelatedLoading(false));

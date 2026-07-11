@@ -143,6 +143,7 @@ const ChatMessage = memo(function ChatMessage({
   role,
   content,
   sources,
+  agentSteps,
   isStreaming,
   bookmarked,
   rating: propRating,
