@@ -8,6 +8,7 @@ import ChatInput from "@/components/ChatInput";
 import ChatMessage from "@/components/ChatMessage";
 import DocumentList from "@/components/DocumentList";
 import DocumentUpload from "@/components/DocumentUpload";
+import SourceViewer from "@/components/SourceViewer";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,10 @@ export default function Home() {
   const [docRefreshKey, setDocRefreshKey] = useState(0);
   const [streamingContent, setStreamingContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hybridSearch, setHybridSearch] = useState(false);
+  const [sourceViewerOpen, setSourceViewerOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [sourceViewerData, setSourceViewerData] = useState<any[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const streamRef = useRef<AbortController | null>(null);
@@ -67,6 +72,18 @@ export default function Home() {
   useEffect(() => {
     if (folders.length > 0) saveFolders(folders);
   }, [folders]);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.sources) {
+        setSourceViewerData(detail.sources);
+        setSourceViewerOpen(true);
+      }
+    };
+    window.addEventListener("open-source", handler);
+    return () => window.removeEventListener("open-source", handler);
+  }, []);
 
   useEffect(() => {
     const stored = loadConversations();
@@ -162,7 +179,7 @@ export default function Home() {
 
     try {
       let accumulated = "";
-      const stream = sendMessageStream({ message: text });
+      const stream = sendMessageStream({ message: text, hybrid: hybridSearch });
       for await (const chunk of stream) {
         if (controller.signal.aborted) break;
         accumulated += chunk;
@@ -196,7 +213,7 @@ export default function Home() {
       setLoading(false);
       streamRef.current = null;
     }
-  }, [activeId, updateConversation]);
+  }, [activeId, updateConversation, hybridSearch]);
 
   const handleClear = useCallback(() => {
     setConversations([]);
@@ -272,7 +289,7 @@ export default function Home() {
 
     try {
       let accumulated = "";
-      const stream = sendMessageStream({ message: userMsg.content });
+      const stream = sendMessageStream({ message: userMsg.content, hybrid: hybridSearch });
       for await (const chunk of stream) {
         if (controller.signal.aborted) break;
         accumulated += chunk;
@@ -305,7 +322,7 @@ export default function Home() {
       setLoading(false);
       streamRef.current = null;
     }
-  }, [activeId, conversations, updateConversation]);
+  }, [activeId, conversations, updateConversation, hybridSearch]);
 
   const handleFollowUp = useCallback((question: string) => {
     handleSend(question);
@@ -630,7 +647,17 @@ export default function Home() {
                 </div>
               </div>
 
-              <ChatInput onSend={handleSend} disabled={loading} />
+              <ChatInput
+                onSend={handleSend}
+                disabled={loading}
+                hybrid={hybridSearch}
+                onToggleHybrid={() => setHybridSearch(!hybridSearch)}
+              />
+              <SourceViewer
+                sources={sourceViewerData}
+                open={sourceViewerOpen}
+                onClose={() => setSourceViewerOpen(false)}
+              />
 
               {showShareDialog && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">

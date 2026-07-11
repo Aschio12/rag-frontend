@@ -213,7 +213,7 @@ export async function decomposeQuery(query: string) {
   return res.json();
 }
 
-export async function rerankResults(query: string, results: any[]) {
+export async function rerankResults(query: string, results: Source[]) {
   const form = new FormData();
   form.append("query", query);
   form.append("results", JSON.stringify(results));

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 import {
   Brain,
   Clock,
@@ -31,15 +32,15 @@ export default function StudyToolsPanel({ docId }: Props) {
   const [activeTab, setActiveTab] = useState<ToolTab>("summary");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState("");
-  const [flashcards, setFlashcards] = useState<any[]>([]);
-  const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
-  const [timeline, setTimeline] = useState<any[]>([]);
-  const [tables, setTables] = useState<any[]>([]);
+  const [flashcards, setFlashcards] = useState<{ front: string; back: string }[]>([]);
+  const [quizQuestions, setQuizQuestions] = useState<{ question: string; options: string[]; answer: number }[]>([]);
+  const [timeline, setTimeline] = useState<{ date: string; event: string; description?: string }[]>([]);
+  const [tables, setTables] = useState<{ caption?: string; headers?: string[]; rows: string[][] }[]>([]);
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [showFlashcardAnswer, setShowFlashcardAnswer] = useState(false);
 
-  const tabs: { id: ToolTab; label: string; icon: any }[] = [
+  const tabs: { id: ToolTab; label: string; icon: LucideIcon }[] = [
     { id: "summary", label: "Summary", icon: FileText },
     { id: "flashcards", label: "Flashcards", icon: Brain },
     { id: "quiz", label: "Quiz", icon: Lightbulb },

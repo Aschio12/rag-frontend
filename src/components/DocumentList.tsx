@@ -6,8 +6,8 @@ import { FileText, Network, Sparkles, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import KnowledgeGraphView from "@/components/KnowledgeGraphView";
-import MindMapView from "@/components/MindMapView";
+import KnowledgeGraphView, { GraphData } from "@/components/KnowledgeGraphView";
+import MindMapView, { MindMapData } from "@/components/MindMapView";
 import StudyToolsPanel from "@/components/StudyToolsPanel";
 import { extractKnowledgeGraph, generateMindMap } from "@/lib/api";
 
@@ -29,8 +29,8 @@ export default function DocumentList({ refreshKey }: Props) {
   const [loading, setLoading] = useState(true);
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
   const [exploreMode, setExploreMode] = useState<ExploreMode>("knowledge-graph");
-  const [graphData, setGraphData] = useState<any>(null);
-  const [mindMapData, setMindMapData] = useState<any>(null);
+  const [graphData, setGraphData] = useState<GraphData | null>(null);
+  const [mindMapData, setMindMapData] = useState<MindMapData | null>(null);
   const [exploreLoading, setExploreLoading] = useState(false);
 
   const loadDocs = useCallback(() => {

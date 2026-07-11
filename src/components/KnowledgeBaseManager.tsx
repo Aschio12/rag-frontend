@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Database, FolderKanban, Plus, Trash2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
@@ -23,9 +22,19 @@ interface Props {
   onSelectCol: (id: string) => void;
 }
 
+interface KnowledgeBase {
+  id: string;
+  name: string;
+}
+
+interface Collection {
+  id: string;
+  name: string;
+}
+
 export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSelectKb, onSelectCol }: Props) {
-  const [kbs, setKbs] = useState<any[]>([]);
-  const [cols, setCols] = useState<any[]>([]);
+  const [kbs, setKbs] = useState<KnowledgeBase[]>([]);
+  const [cols, setCols] = useState<Collection[]>([]);
   const [expandedKb, setExpandedKb] = useState<string | null>(null);
 
   const loadKbs = useCallback(async () => {
@@ -42,7 +51,7 @@ export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSe
     } catch {}
   }, []);
 
-  useEffect(() => { loadKbs(); }, [loadKbs]);
+  useEffect(() => { queueMicrotask(() => loadKbs()); }, [loadKbs]);
 
   const handleCreateKb = useCallback(async () => {
     const name = prompt("Knowledge base name:");

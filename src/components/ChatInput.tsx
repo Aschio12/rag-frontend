@@ -10,9 +10,11 @@ interface Props {
   onSend: (message: string) => void;
   disabled?: boolean;
   placeholder?: string;
+  hybrid?: boolean;
+  onToggleHybrid?: () => void;
 }
 
-export default function ChatInput({ onSend, disabled, placeholder }: Props) {
+export default function ChatInput({ onSend, disabled, placeholder, hybrid, onToggleHybrid }: Props) {
   const [input, setInput] = useState("");
   const textRef = useRef<HTMLTextAreaElement>(null);
 
@@ -67,6 +69,22 @@ export default function ChatInput({ onSend, disabled, placeholder }: Props) {
             )}
           />
         </div>
+
+        {onToggleHybrid && (
+          <button
+            type="button"
+            onClick={onToggleHybrid}
+            className={cn(
+              "shrink-0 rounded-lg px-2 py-1.5 text-[10px] font-medium transition-colors",
+              hybrid
+                ? "bg-primary/10 text-primary"
+                : "bg-muted/30 text-muted-foreground/50 hover:text-muted-foreground",
+            )}
+            title={hybrid ? "Hybrid search enabled (vector + keyword)" : "Vector-only search"}
+          >
+            {hybrid ? "Hybrid" : "Vector"}
+          </button>
+        )}
 
         <motion.button
           type="submit"

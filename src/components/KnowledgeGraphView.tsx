@@ -3,20 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import type { Network } from "vis-network";
 
-interface Node {
+export interface Node {
   id: string;
   label: string;
   type?: string;
 }
 
-interface Edge {
+export interface Edge {
   source: string;
   target: string;
   label?: string;
 }
 
-interface GraphData {
+export interface GraphData {
   nodes: Node[];
   edges: Edge[];
 }
@@ -33,8 +34,8 @@ export default function KnowledgeGraphView({ data, loading }: Props) {
   useEffect(() => {
     if (!data || !containerRef.current || data.nodes.length === 0) return;
 
-    let network: any = null;
-    let container = containerRef.current;
+    let network: Network | null = null;
+    const container = containerRef.current;
 
     async function render() {
       try {
@@ -42,7 +43,7 @@ export default function KnowledgeGraphView({ data, loading }: Props) {
         const { DataSet } = await import("vis-data");
 
         const nodes = new DataSet(
-          data.nodes.map((n, i) => ({
+          data.nodes.map((n) => ({
             id: n.id,
             label: n.label,
             title: n.type || "",

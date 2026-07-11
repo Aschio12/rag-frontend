@@ -93,26 +93,6 @@ function CodeBlock({ className, children, ...props }: React.HTMLAttributes<HTMLE
   );
 }
 
-function SourceBadge({ source, index }: { source: Source; index: number }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="rounded-lg border bg-muted/30 p-2.5 text-xs">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between gap-2"
-      >
-        <span className="font-medium text-muted-foreground">Source #{index + 1}</span>
-        <span className="shrink-0 text-muted-foreground/60">
-          {open ? "▲" : "▼"} {(source.score * 100).toFixed(0)}% match
-        </span>
-      </button>
-      {open && (
-        <p className="mt-1.5 leading-relaxed text-muted-foreground/80 line-clamp-3">{source.text}</p>
-      )}
-    </div>
-  );
-}
-
 function MermaidDiagram({ code }: { code: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [error, setError] = useState(false);
