@@ -55,6 +55,7 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
   const hasError = steps.some((s) => s.event === "step_error");
   const plan = isComplete ? lastStep?.plan : undefined;
   const verificationResults = isComplete ? lastStep?.verification : undefined;
+  const searchQueries = isComplete ? lastStep?.search_queries : undefined;
 
   return (
     <div className="mb-3 rounded-xl border bg-muted/20">
@@ -123,11 +124,18 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
                         isActive && "animate-pulse",
                       )}
                     />
-                    <span className="flex-1">
-                      {step.label || step.step || "Processing..."}
+                    <span className="flex-1 min-w-0">
+                      <span className="block truncate">
+                        {step.label || step.step || "Processing..."}
+                      </span>
+                      {step.description && isActive && (
+                        <span className="block text-[9px] text-muted-foreground/50 truncate mt-0.5">
+                          {step.description}
+                        </span>
+                      )}
                     </span>
                     {step.duration && (
-                      <span className="text-[9px] text-muted-foreground/50">
+                      <span className="text-[9px] text-muted-foreground/50 shrink-0">
                         {step.duration.toFixed(1)}s
                       </span>
                     )}
@@ -148,6 +156,22 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
                 );
               })}
             </div>
+
+            {/* Search Queries Summary */}
+            {isComplete && searchQueries && searchQueries.length > 0 && (
+              <div className="border-t border-muted/20 px-3 py-2">
+                <div className="flex flex-wrap gap-1">
+                  {searchQueries.map((q, i) => (
+                    <span
+                      key={i}
+                      className="rounded-full bg-blue-500/10 text-blue-600 px-2 py-0.5 text-[9px] font-medium"
+                    >
+                      {q}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Plan & Details */}
             {isComplete && (plan || verificationResults) && (
