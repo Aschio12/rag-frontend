@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, FileText, ScrollText, X } from "lucide-react";
 
@@ -105,11 +106,14 @@ export default function SourceViewer({ sources, open, onClose }: SourceViewerPro
                   {imgLoading && (
                     <Skeleton className="h-48 w-full rounded-none" />
                   )}
-                  <img
+                  <Image
                     src={previewUrl}
                     alt="Document preview"
-                    className={cn("w-full", imgLoading && "hidden")}
+                    width={800}
+                    height={600}
+                    className={cn("w-full h-auto", imgLoading && "hidden")}
                     onLoad={() => setImgLoading(false)}
+                    unoptimized
                   />
                 </div>
               ) : selectedSource !== null ? (
