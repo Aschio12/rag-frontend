@@ -111,7 +111,7 @@ export default function KnowledgeGraphView({ data, loading }: Props) {
   if (!data || data.nodes.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center rounded-lg border bg-muted/20">
-        <p className="text-xs text-muted-foreground/40">No knowledge graph available</p>
+        <p className="text-xs text-muted-foreground/40">Select a document to explore its knowledge graph</p>
       </div>
     );
   }

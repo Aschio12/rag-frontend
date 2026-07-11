@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Database, FolderKanban, Plus, Trash2 } from "lucide-react";
+import { Check, Database, FolderKanban, Loader2, Plus, Trash2, X } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
@@ -25,30 +26,52 @@ interface Props {
 interface KnowledgeBase {
   id: string;
   name: string;
+  collection_count?: number;
+  document_count?: number;
 }
 
 interface Collection {
   id: string;
   name: string;
+  document_count?: number;
 }
 
 export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSelectKb, onSelectCol }: Props) {
   const [kbs, setKbs] = useState<KnowledgeBase[]>([]);
   const [cols, setCols] = useState<Collection[]>([]);
   const [expandedKb, setExpandedKb] = useState<string | null>(null);
+  const [selectedKb, setSelectedKb] = useState<string | null>(null);
+  const [loadingKbs, setLoadingKbs] = useState(false);
+  const [loadingCols, setLoadingCols] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  const showFeedback = (type: "success" | "error", message: string) => {
+    setFeedback({ type, message });
+    setTimeout(() => setFeedback(null), 2500);
+  };
 
   const loadKbs = useCallback(async () => {
+    setLoadingKbs(true);
     try {
       const data = await listKnowledgeBases();
       setKbs(data);
-    } catch {}
+    } catch {
+      showFeedback("error", "Failed to load knowledge bases");
+    } finally {
+      setLoadingKbs(false);
+    }
   }, []);
 
   const loadCols = useCallback(async (kbId: string) => {
+    setLoadingCols(true);
     try {
       const data = await listCollections(kbId);
       setCols(data);
-    } catch {}
+    } catch {
+      showFeedback("error", "Failed to load collections");
+    } finally {
+      setLoadingCols(false);
+    }
   }, []);
 
   useEffect(() => { queueMicrotask(() => loadKbs()); }, [loadKbs]);
@@ -58,8 +81,11 @@ export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSe
     if (!name?.trim()) return;
     try {
       await createKnowledgeBase(name.trim());
+      showFeedback("success", "Knowledge base created");
       loadKbs();
-    } catch {}
+    } catch {
+      showFeedback("error", "Failed to create knowledge base");
+    }
   }, [loadKbs]);
 
   const handleCreateCol = useCallback(async (kbId: string) => {
@@ -67,28 +93,39 @@ export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSe
     if (!name?.trim()) return;
     try {
       await createCollection(kbId, name.trim());
+      showFeedback("success", "Collection created");
       loadCols(kbId);
-    } catch {}
+    } catch {
+      showFeedback("error", "Failed to create collection");
+    }
   }, [loadCols]);
 
   const handleDeleteKb = useCallback(async (kbId: string) => {
     try {
       await deleteKnowledgeBase(kbId);
+      showFeedback("success", "Knowledge base deleted");
       loadKbs();
       if (selectedKbId === kbId) onSelectKb("");
+      if (selectedKb === kbId) setSelectedKb(null);
       setCols([]);
-    } catch {}
-  }, [loadKbs, selectedKbId, onSelectKb]);
+    } catch {
+      showFeedback("error", "Failed to delete knowledge base");
+    }
+  }, [loadKbs, selectedKbId, onSelectKb, selectedKb]);
 
   const handleDeleteCol = useCallback(async (colId: string) => {
     try {
       await deleteCollection(colId);
+      showFeedback("success", "Collection deleted");
       if (expandedKb) loadCols(expandedKb);
       if (selectedColId === colId) onSelectCol("");
-    } catch {}
+    } catch {
+      showFeedback("error", "Failed to delete collection");
+    }
   }, [loadCols, expandedKb, selectedColId, onSelectCol]);
 
   const toggleExpand = (kbId: string) => {
+    setSelectedKb(kbId);
     if (expandedKb === kbId) {
       setExpandedKb(null);
       setCols([]);
@@ -100,6 +137,20 @@ export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSe
 
   return (
     <div className="space-y-2">
+      {feedback && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          className={cn(
+            "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px]",
+            feedback.type === "success" ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600",
+          )}
+        >
+          {feedback.type === "success" ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+          {feedback.message}
+        </motion.div>
+      )}
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
           <Database className="h-3 w-3" />
@@ -118,17 +169,38 @@ export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSe
       </div>
 
       <div className="space-y-0.5">
-        {kbs.map((kb) => (
+        {loadingKbs ? (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground/40" />
+          </div>
+        ) : kbs.length === 0 ? (
+          <p className="px-2 text-[10px] text-muted-foreground/40">No knowledge bases. Create one to get started.</p>
+        ) : (
+          kbs.map((kb) => (
           <div key={kb.id}>
             <div
               className={cn(
                 "group flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs cursor-pointer transition-colors",
-                expandedKb === kb.id ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent/50",
+                selectedKb === kb.id ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent/50",
               )}
               onClick={() => toggleExpand(kb.id)}
             >
               <FolderKanban className="h-3 w-3 shrink-0" />
               <span className="flex-1 truncate">{kb.name}</span>
+              {(kb.collection_count !== undefined || kb.document_count !== undefined) && (
+                <div className="flex items-center gap-1">
+                  {kb.collection_count !== undefined && (
+                    <Badge variant="secondary" className="h-4 px-1 text-[9px] font-normal">
+                      {kb.collection_count}
+                    </Badge>
+                  )}
+                  {kb.document_count !== undefined && (
+                    <Badge variant="outline" className="h-4 px-1 text-[9px] font-normal">
+                      {kb.document_count}
+                    </Badge>
+                  )}
+                </div>
+              )}
               <button
                 onClick={(e) => { e.stopPropagation(); handleDeleteKb(kb.id); }}
                 className="hidden group-hover:block rounded p-0.5 text-muted-foreground/40 hover:text-destructive transition-colors"
@@ -146,7 +218,11 @@ export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSe
                   className="ml-3 space-y-0.5 overflow-hidden"
                 >
                   <div className="flex items-center justify-between px-2 py-1">
-                    <span className="text-[10px] text-muted-foreground/50">Collections</span>
+                    {loadingCols ? (
+                      <Loader2 className="h-3 w-3 animate-spin text-muted-foreground/40" />
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground/50">Collections</span>
+                    )}
                     <button
                       onClick={() => handleCreateCol(kb.id)}
                       className="rounded p-0.5 text-muted-foreground/40 hover:text-foreground transition-colors"
@@ -166,6 +242,11 @@ export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSe
                       onClick={() => onSelectCol(col.id)}
                     >
                       <span className="flex-1 truncate">{col.name}</span>
+                      {col.document_count !== undefined && (
+                        <Badge variant="outline" className="h-3.5 px-1 text-[8px] font-normal">
+                          {col.document_count}
+                        </Badge>
+                      )}
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDeleteCol(col.id); }}
                         className="hidden group-hover:block rounded p-0.5 text-muted-foreground/30 hover:text-destructive transition-colors"
@@ -174,17 +255,15 @@ export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSe
                       </button>
                     </div>
                   ))}
-                  {cols.length === 0 && (
+                  {!loadingCols && cols.length === 0 && (
                     <p className="px-2 text-[10px] text-muted-foreground/30">No collections</p>
                   )}
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-        ))}
-        {kbs.length === 0 && (
-          <p className="px-2 text-[10px] text-muted-foreground/40">No knowledge bases. Create one to get started.</p>
-        )}
+        ))
+      )}
       </div>
     </div>
   );

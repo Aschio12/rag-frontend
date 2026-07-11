@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, FileText, X } from "lucide-react";
+import { ExternalLink, FileText, ScrollText, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { getDocumentPreview } from "@/lib/api";
 
@@ -23,9 +24,11 @@ interface SourceViewerProps {
 export default function SourceViewer({ sources, open, onClose }: SourceViewerProps) {
   const [selectedSource, setSelectedSource] = useState<number | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imgLoading, setImgLoading] = useState(false);
 
   const handleSelect = async (idx: number) => {
     setSelectedSource(idx);
+    setImgLoading(!!sources[idx]?.page_number);
     const src = sources[idx];
     if (src.page_number) {
       try {
@@ -37,6 +40,7 @@ export default function SourceViewer({ sources, open, onClose }: SourceViewerPro
     } else {
       setPreviewUrl(null);
     }
+    setImgLoading(false);
   };
 
   return (
@@ -98,10 +102,14 @@ export default function SourceViewer({ sources, open, onClose }: SourceViewerPro
             <div className="flex w-1/2 flex-col">
               {previewUrl ? (
                 <div className="flex-1 overflow-auto">
+                  {imgLoading && (
+                    <Skeleton className="h-48 w-full rounded-none" />
+                  )}
                   <img
                     src={previewUrl}
                     alt="Document preview"
-                    className="w-full"
+                    className={cn("w-full", imgLoading && "hidden")}
+                    onLoad={() => setImgLoading(false)}
                   />
                 </div>
               ) : selectedSource !== null ? (
@@ -124,7 +132,8 @@ export default function SourceViewer({ sources, open, onClose }: SourceViewerPro
                   </a>
                 </div>
               ) : (
-                <div className="flex flex-1 items-center justify-center">
+                <div className="flex flex-1 flex-col items-center justify-center gap-2">
+                  <ScrollText className="h-6 w-6 text-muted-foreground/20" />
                   <p className="text-xs text-muted-foreground/40">Select a source to preview</p>
                 </div>
               )}

@@ -136,7 +136,7 @@ export default function StudyToolsPanel({ docId }: Props) {
                     <p className="text-sm leading-relaxed text-muted-foreground">{summary}</p>
                   ) : (
                     <p className="text-xs text-muted-foreground/40 text-center py-4">
-                      Click &quot;Summary&quot; to generate
+                      Click &apos;Generate Summary&apos; to begin
                     </p>
                   )}
                 </div>
@@ -184,7 +184,7 @@ export default function StudyToolsPanel({ docId }: Props) {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground/40 text-center py-4">Click &quot;Flashcards&quot; to generate</p>
+                    <p className="text-xs text-muted-foreground/40 text-center py-4">Generate flashcards to test your knowledge</p>
                   )}
                 </div>
               )}
@@ -216,7 +216,7 @@ export default function StudyToolsPanel({ docId }: Props) {
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-muted-foreground/40 text-center py-4">Click &quot;Quiz&quot; to generate</p>
+                    <p className="text-xs text-muted-foreground/40 text-center py-4">Generate a quiz to check understanding</p>
                   )}
                 </div>
               )}
@@ -237,7 +237,7 @@ export default function StudyToolsPanel({ docId }: Props) {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground/40 text-center py-4">Click &quot;Timeline&quot; to extract</p>
+                    <p className="text-xs text-muted-foreground/40 text-center py-4">No timeline data yet</p>
                   )}
                 </div>
               )}
@@ -275,7 +275,7 @@ export default function StudyToolsPanel({ docId }: Props) {
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-muted-foreground/40 text-center py-4">Click &quot;Tables&quot; to extract</p>
+                    <p className="text-xs text-muted-foreground/40 text-center py-4">No tables extracted yet</p>
                   )}
                 </div>
               )}

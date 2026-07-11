@@ -96,9 +96,14 @@ export default function DocumentList({ refreshKey }: Props) {
 
   if (docs.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-muted-foreground/20 py-8 text-center">
-        <FileText className="h-6 w-6 text-muted-foreground/30" />
-        <p className="text-xs text-muted-foreground">No documents indexed yet.</p>
+      <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-muted-foreground/20 py-10 text-center">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted/50">
+          <FileText className="h-5 w-5 text-muted-foreground/30" />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-muted-foreground/70">No documents yet</p>
+          <p className="mt-1 text-xs text-muted-foreground/40">Upload a document above to get started</p>
+        </div>
       </div>
     );
   }

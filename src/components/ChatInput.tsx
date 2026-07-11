@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 
@@ -17,6 +17,10 @@ interface Props {
 export default function ChatInput({ onSend, disabled, placeholder, hybrid, onToggleHybrid }: Props) {
   const [input, setInput] = useState("");
   const textRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    textRef.current?.focus();
+  }, []);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
