@@ -25,7 +25,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { Source } from "@/lib/api";
+import type { AgentStepEvent, Source } from "@/lib/api";
+import AgentStepsDisplay from "@/components/AgentStepsDisplay";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -33,6 +34,7 @@ interface Props {
   role: "user" | "assistant";
   content: string;
   sources?: Source[];
+  agentSteps?: AgentStepEvent[];
   isStreaming?: boolean;
   bookmarked?: boolean;
   rating?: "up" | "down" | null;
@@ -305,12 +307,21 @@ const ChatMessage = memo(function ChatMessage({
           ) : isUser ? (
             <p className="whitespace-pre-wrap">{content}</p>
           ) : isStreaming ? (
-            <div className="text-sm leading-relaxed whitespace-pre-wrap">
-              <TypingContent content={content} />
-            </div>
+            <>
+              {agentSteps && agentSteps.length > 0 && (
+                <AgentStepsDisplay steps={agentSteps} />
+              )}
+              <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                <TypingContent content={content} />
+              </div>
+            </>
           ) : (
-            <div className="prose prose-sm dark:prose-invert max-w-none prose-pre:p-0 prose-code:before:content-none prose-code:after:content-none">
-              <ReactMarkdown
+            <>
+              {agentSteps && agentSteps.length > 0 && (
+                <AgentStepsDisplay steps={agentSteps} />
+              )}
+              <div className="prose prose-sm dark:prose-invert max-w-none prose-pre:p-0 prose-code:before:content-none prose-code:after:content-none">
+                <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeHighlight, rehypeKatex]}
                 components={{
@@ -379,6 +390,7 @@ const ChatMessage = memo(function ChatMessage({
                 {content}
               </ReactMarkdown>
             </div>
+            </>
           )}
         </div>
 
