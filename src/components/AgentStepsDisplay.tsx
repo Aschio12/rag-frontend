@@ -71,10 +71,17 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
         )}
         <Sparkles className="h-3.5 w-3.5 text-primary" />
         <span>Agent Execution</span>
+        {isComplete && lastStep?.summary && (
+          <span className="text-[9px] text-muted-foreground/50">
+            {lastStep.summary.searches_performed} searches · {lastStep.summary.sources_found} sources
+            {lastStep.summary.claims_verified > 0 ? ` · ${lastStep.summary.claims_verified} verified` : ""}
+          </span>
+        )}
         {isComplete && (
           <span className="ml-auto flex items-center gap-1 text-[10px] text-emerald-500">
             <CheckCircle2 className="h-3 w-3" />
-            Complete ({lastStep.total_time?.toFixed(1)}s)
+            Complete
+            {lastStep.total_time ? ` (${lastStep.total_time.toFixed(1)}s)` : ""}
           </span>
         )}
         {hasError && !isComplete && (
