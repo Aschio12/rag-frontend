@@ -4,6 +4,7 @@ import "highlight.js/styles/github-dark.css";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 import { ToastProvider } from "@/components/Toast";
+import { MotionConfig } from "framer-motion";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RAG Knowledge Chatbot",
-  description: "Ask questions about your documents",
+  title: "Premium AI Workspace",
+  description: "Futuristic AI Assistant with Kinetic Brutalism Interface",
 };
 
 export default function RootLayout({
@@ -28,9 +29,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}
     >
-      <body className="min-h-full flex flex-col"><ToastProvider>{children}</ToastProvider></body>
+      <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
+        <MotionConfig reducedMotion="user">
+          <ToastProvider>{children}</ToastProvider>
+        </MotionConfig>
+      </body>
     </html>
   );
 }
