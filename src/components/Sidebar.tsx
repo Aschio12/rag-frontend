@@ -118,13 +118,13 @@ function NavItemButton({
             {isActive && (
               <motion.div
                 layoutId={layoutId}
-                className="absolute left-0 w-[2px] h-3/5 bg-gradient-to-b from-[#00f2fe] to-[#7000ff] glow-cyan rounded-full"
+                className="absolute left-0 w-[3px] h-3/5 bg-gradient-to-b from-[#00f2fe] to-[#7000ff] glow-cyan rounded-full"
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}
             <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-[#00f2fe]" : "text-gray-400 group-hover:text-[#00f2fe]")} />
             {!collapsed && (
-              <span className="z-10 text-sm font-medium tracking-wider uppercase text-xs">{item.label}</span>
+              <span className="z-10 text-xs font-medium tracking-widest uppercase">{item.label}</span>
             )}
           </button>
         </TooltipTrigger>
@@ -157,7 +157,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
       )}
       <motion.aside
         animate={{ width: collapsed && !mobileOpen ? 60 : 240 }}
-        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className={cn(
           "flex h-dvh flex-col overflow-hidden shrink-0",
           "py-4 my-2 ml-2 max-md:my-0 max-md:ml-0 rounded-2xl max-md:rounded-none",
