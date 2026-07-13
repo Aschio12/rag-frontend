@@ -3,14 +3,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Brain,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
   Clock,
-  FileSearch,
-  ListChecks,
-  Search,
   ScrollText,
   Sparkles,
   XCircle,
@@ -24,26 +20,6 @@ interface AgentStepsDisplayProps {
   steps: AgentStepEvent[];
   onToggle?: () => void;
 }
-
-const stepIcons: Record<string, React.ElementType> = {
-  planning: Brain,
-  searching: Search,
-  retrieving: FileSearch,
-  reasoning: Brain,
-  critiquing: ListChecks,
-  verifying: CheckCircle2,
-  memory: Sparkles,
-};
-
-const stepColors: Record<string, string> = {
-  planning: "text-violet-500 bg-violet-500/10 border-violet-500/20",
-  searching: "text-blue-500 bg-blue-500/10 border-blue-500/20",
-  retrieving: "text-cyan-500 bg-cyan-500/10 border-cyan-500/20",
-  reasoning: "text-amber-500 bg-amber-500/10 border-amber-500/20",
-  critiquing: "text-purple-500 bg-purple-500/10 border-purple-500/20",
-  verifying: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
-  memory: "text-rose-500 bg-rose-500/10 border-rose-500/20",
-};
 
 export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
   const [collapsed, setCollapsed] = useState(false);
@@ -59,53 +35,73 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
   const searchQueries = isComplete ? lastStep?.search_queries : undefined;
 
   return (
-    <div className="mb-3 rounded-xl border bg-muted/20">
-      {/* Header */}
-      <button
+    <motion.div
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mb-3 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden"
+    >
+      <motion.button
         onClick={() => setCollapsed(!collapsed)}
-        className="flex w-full items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+        whileHover={{ backgroundColor: "rgba(255,255,255,0.02)" }}
+        className="flex w-full items-center gap-2 px-3 py-2.5 text-xs font-medium text-muted-foreground/70 hover:text-foreground transition-colors"
       >
-        {collapsed ? (
+        <motion.div
+          animate={{ rotate: collapsed ? 0 : 90 }}
+          transition={{ duration: 0.2 }}
+        >
           <ChevronRight className="h-3.5 w-3.5" />
-        ) : (
-          <ChevronDown className="h-3.5 w-3.5" />
-        )}
-        <Sparkles className="h-3.5 w-3.5 text-primary" />
+        </motion.div>
+        <Sparkles className="h-3.5 w-3.5 text-purple-400" />
         <span>Agent Execution</span>
         {isComplete && lastStep?.summary && (
-          <span className="text-[9px] text-muted-foreground/50">
-            {lastStep.summary.searches_performed} searches · {lastStep.summary.sources_found} sources
-            {lastStep.summary.claims_verified > 0 ? ` · ${lastStep.summary.claims_verified} verified` : ""}
+          <span className="text-[9px] text-muted-foreground/40 hidden sm:inline">
+            {lastStep.summary.searches_performed} searches &middot; {lastStep.summary.sources_found} sources
+            {lastStep.summary.claims_verified > 0 ? ` &middot; ${lastStep.summary.claims_verified} verified` : ""}
           </span>
         )}
-        {isComplete && (
-          <span className="ml-auto flex items-center gap-1 text-[10px] text-emerald-500">
-            <CheckCircle2 className="h-3 w-3" />
-            Complete
-            {lastStep.total_time ? ` (${lastStep.total_time.toFixed(1)}s)` : ""}
-          </span>
-        )}
-        {hasError && !isComplete && (
-          <span className="ml-auto flex items-center gap-1 text-[10px] text-red-500">
-            <XCircle className="h-3 w-3" />
-            Error
-          </span>
-        )}
-        {!isComplete && !hasError && (
-          <span className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground/50">
-            <Clock className="h-3 w-3 animate-pulse" />
-            Running...
-          </span>
-        )}
-      </button>
+        <span className="ml-auto flex items-center gap-1">
+          {isComplete && (
+            <span className="flex items-center gap-1 text-[10px] text-emerald-400">
+              <CheckCircle2 className="h-3 w-3" />
+              <span className="hidden sm:inline">Complete</span>
+              {lastStep.total_time ? ` (${lastStep.total_time.toFixed(1)}s)` : ""}
+            </span>
+          )}
+          {hasError && !isComplete && (
+            <span className="flex items-center gap-1 text-[10px] text-red-400">
+              <XCircle className="h-3 w-3" />
+              Error
+            </span>
+          )}
+          {!isComplete && !hasError && (
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/40">
+              <Clock className="h-3 w-3 animate-pulse" />
+              Running...
+            </span>
+          )}
+        </span>
+      </motion.button>
 
-      {/* Steps */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {!collapsed && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            animate={{
+              height: "auto",
+              opacity: 1,
+              transition: {
+                height: { type: "spring", stiffness: 200, damping: 25 },
+                opacity: { duration: 0.2 },
+              },
+            }}
+            exit={{
+              height: 0,
+              opacity: 0,
+              transition: {
+                height: { duration: 0.2 },
+                opacity: { duration: 0.1 },
+              },
+            }}
             className="overflow-hidden"
           >
             <div className="px-3 pb-3">
@@ -121,14 +117,13 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
               />
             </div>
 
-            {/* Search Queries Summary */}
             {isComplete && searchQueries && searchQueries.length > 0 && (
-              <div className="border-t border-muted/20 px-3 py-2">
+              <div className="border-t border-white/5 px-3 py-2">
                 <div className="flex flex-wrap gap-1">
                   {searchQueries.map((q, i) => (
                     <span
                       key={i}
-                      className="rounded-full bg-blue-500/10 text-blue-600 px-2 py-0.5 text-[9px] font-medium"
+                      className="rounded-full bg-blue-500/10 text-blue-400 px-2 py-0.5 text-[9px] font-medium"
                     >
                       {q}
                     </span>
@@ -137,17 +132,23 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
               </div>
             )}
 
-            {/* Plan & Details */}
             {isComplete && (plan || verificationResults) && (
-              <div className="border-t border-muted/20 px-3 py-2">
-                <button
+              <div className="border-t border-white/5 px-3 py-2">
+                <motion.button
                   onClick={() => setShowDetails(!showDetails)}
-                  className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 hover:text-foreground transition-colors"
+                  whileHover={{ backgroundColor: "rgba(255,255,255,0.02)" }}
+                  className="flex w-full items-center gap-1.5 rounded-lg px-2 py-1 text-[10px] text-muted-foreground/50 hover:text-foreground transition-colors"
                 >
                   <ScrollText className="h-3 w-3" />
                   {showDetails ? "Hide" : "Show"} agent reasoning details
-                  {showDetails ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                </button>
+                  <motion.div
+                    animate={{ rotate: showDetails ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="ml-auto"
+                  >
+                    <ChevronDown className="h-3 w-3" />
+                  </motion.div>
+                </motion.button>
                 <AnimatePresence>
                   {showDetails && (
                     <motion.div
@@ -158,25 +159,25 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
                     >
                       {plan && (
                         <div>
-                          <p className="text-[10px] font-medium text-violet-500 mb-1">Plan</p>
-                          <pre className="whitespace-pre-wrap text-[10px] text-muted-foreground/80 bg-muted/30 rounded-lg p-2">
+                          <p className="text-[10px] font-medium text-violet-400 mb-1">Plan</p>
+                          <pre className="whitespace-pre-wrap text-[10px] text-muted-foreground/60 bg-white/[0.02] rounded-lg p-2.5 border border-white/5">
                             {plan}
                           </pre>
                         </div>
                       )}
                       {verificationResults && verificationResults.length > 0 && (
                         <div>
-                          <p className="text-[10px] font-medium text-emerald-500 mb-1">Verification</p>
+                          <p className="text-[10px] font-medium text-emerald-400 mb-1">Verification</p>
                           <div className="space-y-1">
                             {verificationResults.map((v, i) => (
                               <div
                                 key={i}
-                                className="rounded-lg bg-muted/30 px-2 py-1.5 text-[10px]"
+                                className="rounded-lg bg-white/[0.02] border border-white/5 px-2.5 py-1.5 text-[10px]"
                               >
-                                <p className="text-muted-foreground/80">Claim: {v.claim}</p>
+                                <p className="text-muted-foreground/70">Claim: {v.claim}</p>
                                 <p className={cn(
-                                  "mt-0.5",
-                                  v.supported ? "text-emerald-500" : "text-amber-500",
+                                  "mt-0.5 font-medium",
+                                  v.supported ? "text-emerald-400" : "text-amber-400",
                                 )}>
                                   {v.verdict}
                                 </p>
@@ -193,6 +194,6 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
