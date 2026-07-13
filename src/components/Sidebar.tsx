@@ -99,6 +99,7 @@ function NavItemButton({
     <motion.div
       whileHover={{ scale: 1.02, x: collapsed ? 0 : 4 }}
       whileTap={{ scale: 0.98 }}
+      className="group"
     >
       <Tooltip open={collapsed ? isHovered : undefined}>
         <TooltipTrigger asChild>
