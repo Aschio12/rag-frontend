@@ -210,7 +210,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
         {!collapsed && conversations && (
           <div className="mt-2 flex-1 overflow-y-auto px-2 scrollbar-thin">
             <div className="flex items-center justify-between mb-1 px-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Chats</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400/60">Chats</span>
               {onNewChat && (
                 <button
                   onClick={onNewChat}
