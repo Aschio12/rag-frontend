@@ -6,7 +6,12 @@ import "./globals.css";
 import { ToastProvider } from "@/components/Toast";
 import { MotionConfig } from "framer-motion";
 import { AnimatedPageTransition } from "@/components/animations/AnimatedPageTransition";
-import { AmbientBackground } from "@/components/ui/AmbientBackground";
+import dynamic from "next/dynamic";
+
+const AmbientBackground = dynamic(
+  () => import("@/components/ui/AmbientBackground").then((m) => ({ default: m.AmbientBackground })),
+  { ssr: false },
+);
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
