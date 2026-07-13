@@ -10,6 +10,9 @@ import {
   Lightbulb,
   Sparkles,
   Table2,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -40,12 +43,12 @@ export default function StudyToolsPanel({ docId }: Props) {
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [showFlashcardAnswer, setShowFlashcardAnswer] = useState(false);
 
-  const tabs: { id: ToolTab; label: string; icon: LucideIcon }[] = [
-    { id: "summary", label: "Summary", icon: FileText },
-    { id: "flashcards", label: "Flashcards", icon: Brain },
-    { id: "quiz", label: "Quiz", icon: Lightbulb },
-    { id: "timeline", label: "Timeline", icon: Clock },
-    { id: "tables", label: "Tables", icon: Table2 },
+  const tabs: { id: ToolTab; label: string; icon: LucideIcon; color: string }[] = [
+    { id: "summary", label: "Summary", icon: FileText, color: "text-purple-400" },
+    { id: "flashcards", label: "Flashcards", icon: Brain, color: "text-emerald-400" },
+    { id: "quiz", label: "Quiz", icon: Lightbulb, color: "text-amber-400" },
+    { id: "timeline", label: "Timeline", icon: Clock, color: "text-blue-400" },
+    { id: "tables", label: "Tables", icon: Table2, color: "text-rose-400" },
   ];
 
   const loadData = async (tab: ToolTab) => {
@@ -89,38 +92,49 @@ export default function StudyToolsPanel({ docId }: Props) {
   };
 
   return (
-    <div className="rounded-xl border bg-card">
-      <div className="flex items-center gap-1 border-b px-3 py-2 overflow-x-auto scrollbar-thin">
-        <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
-        <span className="mr-2 text-[11px] font-medium text-muted-foreground">Study Tools</span>
+    <div className="rounded-xl border border-white/5 bg-white/[0.02] overflow-hidden">
+      <div className="flex items-center gap-3 border-b border-white/5 px-3 py-2.5 overflow-x-auto scrollbar-thin">
+        <Sparkles className="h-3.5 w-3.5 text-purple-400 shrink-0" />
+        <span className="text-[11px] font-medium text-muted-foreground/60 shrink-0">Study Tools</span>
+        <div className="h-3 w-px bg-white/5" />
         {tabs.map((tab) => {
           const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => loadData(tab.id)}
               className={cn(
-                "flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] transition-colors whitespace-nowrap",
-                activeTab === tab.id
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/50",
+                "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] transition-all duration-200 whitespace-nowrap",
+                isActive
+                  ? "bg-purple-500/10 text-purple-300 font-medium"
+                  : "text-muted-foreground/40 hover:text-muted-foreground/70 hover:bg-white/[0.03]",
               )}
             >
-              <Icon className="h-3 w-3" />
+              <Icon className={cn("h-3 w-3", isActive ? tab.color : "")} />
               {tab.label}
             </button>
           );
         })}
       </div>
 
-      <div className="p-4">
+      <div className="p-4 min-h-[160px]">
         {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 animate-pulse text-primary" />
-              <span className="text-xs text-muted-foreground">Generating...</span>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-center py-10"
+          >
+            <div className="flex flex-col items-center gap-2">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 1.2, repeat: Infinity }}
+              >
+                <Sparkles className="h-5 w-5 text-purple-400/60" />
+              </motion.div>
+              <span className="text-xs text-muted-foreground/40">Generating...</span>
             </div>
-          </div>
+          </motion.div>
         ) : (
           <AnimatePresence mode="wait">
             <motion.div
@@ -128,15 +142,21 @@ export default function StudyToolsPanel({ docId }: Props) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               {activeTab === "summary" && (
                 <div className="prose prose-sm dark:prose-invert max-w-none">
                   {summary ? (
-                    <p className="text-sm leading-relaxed text-muted-foreground">{summary}</p>
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-sm leading-relaxed text-muted-foreground/80"
+                    >
+                      {summary}
+                    </motion.p>
                   ) : (
-                    <p className="text-xs text-muted-foreground/40 text-center py-4">
-                      Click &apos;Generate Summary&apos; to begin
+                    <p className="text-xs text-muted-foreground/30 text-center py-6">
+                      Click <span className="text-purple-400/60 font-medium">Summary</span> to begin
                     </p>
                   )}
                 </div>
@@ -146,77 +166,102 @@ export default function StudyToolsPanel({ docId }: Props) {
                 <div>
                   {flashcards.length > 0 ? (
                     <div>
-                      <div
-                        className="cursor-pointer rounded-xl border p-4 min-h-[120px] flex items-center justify-center"
+                      <motion.div
+                        key={flashcardIndex}
+                        initial={{ opacity: 0, rotateY: -10 }}
+                        animate={{ opacity: 1, rotateY: 0 }}
+                        className="cursor-pointer rounded-xl border border-white/10 p-6 min-h-[140px] flex items-center justify-center bg-gradient-to-b from-white/[0.02] to-transparent"
                         onClick={() => setShowFlashcardAnswer(!showFlashcardAnswer)}
                       >
-                        <p className="text-sm text-center">
+                        <p className="text-sm text-center leading-relaxed">
                           {showFlashcardAnswer
                             ? flashcards[flashcardIndex]?.back
                             : flashcards[flashcardIndex]?.front}
                         </p>
-                      </div>
-                      <p className="mt-2 text-center text-[10px] text-muted-foreground/40">
+                      </motion.div>
+                      <p className="mt-2 text-center text-[10px] text-muted-foreground/30">
                         {showFlashcardAnswer ? "Answer" : "Question"} — Click to flip
                       </p>
                       <div className="mt-3 flex items-center justify-between">
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
                           disabled={flashcardIndex === 0}
                           onClick={() => { setFlashcardIndex((i) => i - 1); setShowFlashcardAnswer(false); }}
-                          className="text-xs h-7"
+                          className="text-xs h-7 text-muted-foreground/50"
                         >
-                          ← Prev
+                          <ChevronLeft className="h-3 w-3 mr-1" />
+                          Prev
                         </Button>
-                        <span className="text-[10px] text-muted-foreground/60">
+                        <span className="text-[10px] font-mono text-muted-foreground/40">
                           {flashcardIndex + 1} / {flashcards.length}
                         </span>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
                           disabled={flashcardIndex === flashcards.length - 1}
                           onClick={() => { setFlashcardIndex((i) => i + 1); setShowFlashcardAnswer(false); }}
-                          className="text-xs h-7"
+                          className="text-xs h-7 text-muted-foreground/50"
                         >
-                          Next →
+                          Next
+                          <ChevronRight className="h-3 w-3 ml-1" />
                         </Button>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground/40 text-center py-4">Generate flashcards to test your knowledge</p>
+                    <p className="text-xs text-muted-foreground/30 text-center py-6">
+                      Generate flashcards to test your knowledge
+                    </p>
                   )}
                 </div>
               )}
 
               {activeTab === "quiz" && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {quizQuestions.length > 0 ? (
                     quizQuestions.map((q, qi) => (
-                      <div key={qi} className="rounded-lg border p-3">
-                        <p className="mb-2 text-xs font-medium">{qi + 1}. {q.question}</p>
+                      <motion.div
+                        key={qi}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: qi * 0.05 }}
+                        className="rounded-xl border border-white/5 p-3.5"
+                      >
+                        <p className="mb-2.5 text-xs font-medium text-foreground/80">
+                          {qi + 1}. {q.question}
+                        </p>
                         <div className="space-y-1">
-                          {(q.options || []).map((opt: string, oi: number) => (
-                            <button
-                              key={oi}
-                              onClick={() => setQuizAnswers((prev) => ({ ...prev, [qi]: oi }))}
-                              className={cn(
-                                "w-full rounded-md px-3 py-1.5 text-left text-[11px] transition-colors",
-                                quizAnswers[qi] === oi && q.answer === oi
-                                  ? "bg-emerald-500/20 text-emerald-600"
-                                  : quizAnswers[qi] === oi && q.answer !== oi
-                                    ? "bg-red-500/20 text-red-600"
-                                    : "bg-muted/30 hover:bg-accent/50 text-muted-foreground",
-                              )}
-                            >
-                              {String.fromCharCode(65 + oi)}. {opt}
-                            </button>
-                          ))}
+                          {(q.options || []).map((opt: string, oi: number) => {
+                            const isAnswered = quizAnswers[qi] !== undefined;
+                            const isCorrect = q.answer === oi;
+                            const isSelected = quizAnswers[qi] === oi;
+                            return (
+                              <button
+                                key={oi}
+                                onClick={() => !isAnswered && setQuizAnswers((prev) => ({ ...prev, [qi]: oi }))}
+                                className={cn(
+                                  "w-full rounded-lg px-3 py-1.5 text-left text-[11px] transition-all duration-200",
+                                  isSelected && isCorrect
+                                    ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
+                                    : isSelected && !isCorrect
+                                      ? "bg-red-500/15 text-red-400 border border-red-500/20"
+                                      : isAnswered && isCorrect
+                                        ? "bg-emerald-500/10 text-emerald-400/60 border border-emerald-500/10"
+                                        : "bg-white/[0.02] text-muted-foreground/60 hover:bg-white/[0.04] border border-transparent",
+                                )}
+                                disabled={isAnswered}
+                              >
+                                {String.fromCharCode(65 + oi)}. {opt}
+                              </button>
+                            );
+                          })}
                         </div>
-                      </div>
+                      </motion.div>
                     ))
                   ) : (
-                    <p className="text-xs text-muted-foreground/40 text-center py-4">Generate a quiz to check understanding</p>
+                    <p className="text-xs text-muted-foreground/30 text-center py-6">
+                      Generate a quiz to check understanding
+                    </p>
                   )}
                 </div>
               )}
@@ -224,58 +269,69 @@ export default function StudyToolsPanel({ docId }: Props) {
               {activeTab === "timeline" && (
                 <div className="space-y-3">
                   {timeline.length > 0 ? (
-                    <div className="relative pl-4 border-l-2 border-muted/30">
+                    <div className="relative pl-5 border-l border-white/10">
                       {timeline.map((event, i) => (
-                        <div key={i} className="relative pb-4 last:pb-0">
-                          <div className="absolute -left-[9.5px] top-1 h-3.5 w-3.5 rounded-full border-2 border-background bg-primary" />
-                          <p className="text-[10px] font-medium text-primary">{event.date}</p>
-                          <p className="mt-0.5 text-xs font-medium">{event.event}</p>
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="relative pb-5 last:pb-0"
+                        >
+                          <div className="absolute -left-[11.5px] top-1 h-3 w-3 rounded-full border-2 border-background bg-purple-500 shadow-[0_0_8px_rgba(124,58,237,0.3)]" />
+                          <p className="text-[10px] font-semibold text-purple-400/80">{event.date}</p>
+                          <p className="mt-0.5 text-xs font-medium text-foreground/70">{event.event}</p>
                           {event.description && (
-                            <p className="mt-0.5 text-[11px] text-muted-foreground">{event.description}</p>
+                            <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground/50">{event.description}</p>
                           )}
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground/40 text-center py-4">No timeline data yet</p>
+                    <p className="text-xs text-muted-foreground/30 text-center py-6">No timeline data yet</p>
                   )}
                 </div>
               )}
 
               {activeTab === "tables" && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {tables.length > 0 ? (
                     tables.map((table, ti) => (
-                      <div key={ti} className="overflow-x-auto rounded-lg border">
+                      <motion.div
+                        key={ti}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="overflow-x-auto rounded-xl border border-white/5"
+                      >
                         {table.caption && (
-                          <p className="border-b px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
+                          <p className="border-b border-white/5 px-3 py-1.5 text-[11px] font-medium text-muted-foreground/60">
                             {table.caption}
                           </p>
                         )}
                         <table className="min-w-full text-xs">
                           {table.headers && (
                             <thead>
-                              <tr className="bg-muted/30">
+                              <tr className="bg-white/[0.02]">
                                 {table.headers.map((h: string, hi: number) => (
-                                  <th key={hi} className="px-3 py-2 text-left font-medium text-muted-foreground">{h}</th>
+                                  <th key={hi} className="px-3 py-2 text-left font-medium text-muted-foreground/60">{h}</th>
                                 ))}
                               </tr>
                             </thead>
                           )}
                           <tbody>
                             {(table.rows || []).map((row: string[], ri: number) => (
-                              <tr key={ri} className="border-t border-muted/20">
+                              <tr key={ri} className="border-t border-white/5">
                                 {row.map((cell: string, ci: number) => (
-                                  <td key={ci} className="px-3 py-2 text-muted-foreground">{cell}</td>
+                                  <td key={ci} className="px-3 py-2 text-muted-foreground/50">{cell}</td>
                                 ))}
                               </tr>
                             ))}
                           </tbody>
                         </table>
-                      </div>
+                      </motion.div>
                     ))
                   ) : (
-                    <p className="text-xs text-muted-foreground/40 text-center py-4">No tables extracted yet</p>
+                    <p className="text-xs text-muted-foreground/30 text-center py-6">No tables extracted yet</p>
                   )}
                 </div>
               )}
