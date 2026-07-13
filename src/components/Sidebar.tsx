@@ -428,15 +428,15 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
             variant="ghost"
             size={collapsed ? "icon" : "default"}
             onClick={() => setCollapsed(!collapsed)}
-            className="w-full text-muted-foreground"
+            className="w-full text-gray-400 hover:text-white hover:bg-white/5"
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            {!collapsed && <span className="text-xs">Collapse</span>}
+            {!collapsed && <span className="text-xs tracking-wider uppercase">Collapse</span>}
           </Button>
         </div>
 
         <div className={cn("mt-2 flex items-center gap-2 px-3", collapsed && "justify-center")}>
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-[10px] font-bold text-white">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#00f2fe] to-[#7000ff] text-[10px] font-bold text-white">
             A
           </div>
           {!collapsed && (
