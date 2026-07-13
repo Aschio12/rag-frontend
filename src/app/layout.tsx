@@ -11,7 +11,6 @@ import dynamic from "next/dynamic";
 
 const AmbientBackground = dynamic(
   () => import("@/components/ui/AmbientBackground").then((m) => ({ default: m.AmbientBackground })),
-  { ssr: false },
 );
 
 const geistSans = Geist({
