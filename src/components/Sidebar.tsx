@@ -96,7 +96,8 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
         animate={{ width: collapsed && !mobileOpen ? 60 : 240 }}
         transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
         className={cn(
-          "flex h-dvh flex-col border-r bg-sidebar py-2 overflow-hidden shrink-0",
+          "flex h-dvh flex-col overflow-hidden shrink-0",
+          "cyber-glass border-r border-white/5",
           mobileOpen && "fixed left-0 top-0 z-50 shadow-xl",
           "max-md:absolute max-md:z-50",
           collapsed && !mobileOpen && "max-md:hidden",
