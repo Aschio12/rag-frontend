@@ -8,6 +8,7 @@
   /* AETHER-OS 2999: Animations */
   --animate-hologram-scan: scan 8s linear infinite;
   --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-subtle-drift: drift 20s ease-in-out infinite;
 
   /* AETHER-OS 2999: Space Canvas */
   --color-space-black: #020204;
@@ -72,6 +73,11 @@
 @keyframes scan {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100%); }
+}
+
+@keyframes drift {
+  0%, 100% { transform: scale(1) translate(0px, 0px); }
+  50% { transform: scale(1.05) translate(10px, -15px); }
 }
 
 @layer base {
