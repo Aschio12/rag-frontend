@@ -7,6 +7,7 @@ import { Download, PanelLeft, Plus, Share2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Conversation } from "@/lib/store";
+import { HeaderAnimation } from "@/components/animations/HeaderAnimation";
 
 interface HeaderProps {
   sidebarCollapsed: boolean;
@@ -46,11 +47,7 @@ export default function Header({
   conversation,
 }: HeaderProps) {
   return (
-    <motion.header
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-lg"
-    >
+    <HeaderAnimation className="sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4">
       <div className="flex items-center gap-3">
         <TooltipProvider>
           <Tooltip>
@@ -154,6 +151,6 @@ export default function Header({
           </TooltipProvider>
         )}
       </div>
-    </motion.header>
+    </HeaderAnimation>
   );
 }
