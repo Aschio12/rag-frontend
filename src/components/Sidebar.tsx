@@ -224,11 +224,6 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                 <span>New Folder</span>
               </button>
             )}
-                className="mb-1 flex w-full items-center gap-1 rounded-md px-2 py-1 text-[10px] text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-colors"
-              >
-                + New Folder
-              </button>
-            )}
 
             <div className="space-y-0.5">
               {conversations

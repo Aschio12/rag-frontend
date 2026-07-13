@@ -235,7 +235,7 @@ export const transformUtils = {
     borderOpacity: number = 0.2
   ) => {
     return {
-      backdropFilter: `blur(${blur})",
+      backdropFilter: `blur(${blur})`,
       WebkitBackdropFilter: `blur(${blur})`,
       backgroundColor: `rgba(255, 255, 255, ${opacity})`,
       borderColor: `rgba(255, 255, 255, ${borderOpacity})`,
