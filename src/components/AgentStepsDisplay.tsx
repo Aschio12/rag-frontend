@@ -18,6 +18,7 @@ import {
 
 import type { AgentStepEvent } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { AgentStepsAnimation } from "@/components/animations/AgentStepsAnimation";
 
 interface AgentStepsDisplayProps {
   steps: AgentStepEvent[];
@@ -107,61 +108,17 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="space-y-1 px-3 pb-3">
-              {steps.map((step, i) => {
-                const Icon = stepIcons[step.step || ""] || Sparkles;
-                const isActive = i === steps.length - 1 && !isComplete && !hasError;
-
-                return (
-                  <div
-                    key={i}
-                    className={cn(
-                      "flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs transition-all",
-                      step.event === "step_error"
-                        ? "border-red-500/20 bg-red-500/5 text-red-600"
-                        : step.event === "step_complete" || step.event === "complete"
-                          ? stepColors[step.step || ""] || "text-muted-foreground border-muted/30"
-                          : "border-muted/20 text-muted-foreground",
-                      isActive && "border-primary/30 bg-primary/5 shadow-sm",
-                    )}
-                  >
-                    <Icon
-                      className={cn(
-                        "h-3.5 w-3.5 shrink-0",
-                        isActive && "animate-pulse",
-                      )}
-                    />
-                    <span className="flex-1 min-w-0">
-                      <span className="block truncate">
-                        {step.label || step.step || "Processing..."}
-                      </span>
-                      {step.description && isActive && (
-                        <span className="block text-[9px] text-muted-foreground/50 truncate mt-0.5">
-                          {step.description}
-                        </span>
-                      )}
-                    </span>
-                    {step.duration && (
-                      <span className="text-[9px] text-muted-foreground/50 shrink-0">
-                        {step.duration.toFixed(1)}s
-                      </span>
-                    )}
-                    {step.event === "step_complete" && (
-                      <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    )}
-                    {step.event === "step_error" && (
-                      <XCircle className="h-3 w-3 text-red-500" />
-                    )}
-                    {isActive && (
-                      <div className="flex gap-0.5">
-                        <span className="typing-dot" />
-                        <span className="typing-dot" />
-                        <span className="typing-dot" />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+            <div className="px-3 pb-3">
+              <AgentStepsAnimation
+                steps={steps.map((s, i) => ({
+                  id: `${s.step || "step"}-${i}`,
+                  label: s.label || s.step || "Processing...",
+                  status: s.event === "step_error" ? "error" as const
+                    : s.event === "step_complete" || s.event === "complete" ? "complete" as const
+                    : i === steps.length - 1 && !isComplete && !hasError ? "active" as const
+                    : "pending" as const,
+                }))}
+              />
             </div>
 
             {/* Search Queries Summary */}
