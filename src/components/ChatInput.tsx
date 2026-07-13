@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { ChatInputAnimation } from "@/components/animations/ChatInputAnimation";
 
 interface Props {
   onSend: (message: string) => void;
@@ -52,9 +53,8 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
   const hasText = input.trim().length > 0;
 
   return (
-    <motion.div
-      initial={{ y: 20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
+    <ChatInputAnimation
+      isExpanded={hasText}
       className="border-t bg-background px-4 py-3"
     >
       <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-3xl items-end gap-2">
@@ -133,6 +133,6 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
       <p className="mt-2 text-center text-[10px] text-muted-foreground/40">
         RAG Knowledge Chatbot may produce inaccurate information. Verify important facts.
       </p>
-    </motion.div>
+    </ChatInputAnimation>
   );
 }
