@@ -266,6 +266,9 @@
   .glow-violet {
     box-shadow: 0 0 25px -5px rgba(112, 0, 255, 0.2), 0 0 10px -2px rgba(112, 0, 255, 0.1);
   }
+  .glow-emerald {
+    box-shadow: 0 0 25px -5px rgba(0, 255, 135, 0.2), 0 0 10px -2px rgba(0, 255, 135, 0.1);
+  }
 
   /* AETHER-OS 2999: Scanline Matrix Overlay */
   .scanlines {

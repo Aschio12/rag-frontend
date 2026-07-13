@@ -75,7 +75,7 @@ export default function Header({
 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#00ff87] animate-pulse shadow-[0_0_6px_rgba(0,255,135,0.5)]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#00ff87] animate-pulse-slow glow-emerald" />
             <span className="text-xs font-mono text-gray-500 tracking-wider">AETHER_OS_v2.9.9</span>
           </div>
           <div className="w-px h-4 bg-white/10" />
