@@ -47,10 +47,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <motion.div
               key={toast.id}
               layout
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -10, scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
               className={cn(
                 "pointer-events-auto flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm shadow-lg backdrop-blur-md",
                 toast.type === "success" && "border-emerald-500/30 bg-emerald-950/60 text-emerald-200",
