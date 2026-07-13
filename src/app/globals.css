@@ -5,6 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* AETHER-OS 2999: Animations */
+  --animate-hologram-scan: scan 8s linear infinite;
+
   /* AETHER-OS 2999: Space Canvas */
   --color-space-black: #020204;
   --color-space-deep: #05050c;
@@ -62,6 +65,12 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* AETHER-OS 2999: Keyframes */
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
 }
 
 @layer base {
