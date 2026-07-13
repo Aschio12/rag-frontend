@@ -24,7 +24,10 @@ export function HeaderAnimation({
   return (
     <motion.header
       className={className}
+      initial={{ y: -60, opacity: 0 }}
       animate={{
+        y: 0,
+        opacity: 1,
         boxShadow: isScrolled
           ? "0 0 25px -5px rgba(0, 242, 254, 0.08), 0 4px 12px rgba(0, 0, 0, 0.15)"
           : "0 0 0px rgba(0, 0, 0, 0)",
