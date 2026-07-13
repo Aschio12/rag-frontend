@@ -55,14 +55,14 @@ export default function Header({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => {
+                  onClick={() => {
                   if (window.innerWidth < 768) {
                     onToggleMobileSidebar?.();
                   } else {
                     setSidebarCollapsed(!sidebarCollapsed);
                   }
                 }}
-                className="text-muted-foreground"
+                className="text-gray-400 hover:text-white hover:bg-white/5"
               >
                 <PanelLeft className="h-4 w-4" />
               </Button>
@@ -94,7 +94,7 @@ export default function Header({
                   variant="ghost"
                   size="icon"
                   onClick={onShare}
-                  className="text-muted-foreground"
+                  className="text-gray-400 hover:text-white hover:bg-white/5"
                 >
                   <Share2 className="h-4 w-4" />
                 </Button>
@@ -111,7 +111,7 @@ export default function Header({
                   variant="ghost"
                   size="icon"
                   onClick={() => onExport("markdown")}
-                  className="text-muted-foreground"
+                  className="text-gray-400 hover:text-white hover:bg-white/5"
                 >
                   <Download className="h-4 w-4" />
                 </Button>
@@ -128,7 +128,7 @@ export default function Header({
                   variant="ghost"
                   size="icon"
                   onClick={onNewChat}
-                  className="text-muted-foreground"
+                  className="text-gray-400 hover:text-white hover:bg-white/5"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -145,7 +145,7 @@ export default function Header({
                   variant="ghost"
                   size="icon"
                   onClick={onClear}
-                  className="text-muted-foreground hover:text-destructive"
+                  className="text-gray-400 hover:text-red-400 hover:bg-white/5"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
