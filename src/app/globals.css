@@ -7,6 +7,7 @@
 @theme inline {
   /* AETHER-OS 2999: Animations */
   --animate-hologram-scan: scan 8s linear infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
   /* AETHER-OS 2999: Space Canvas */
   --color-space-black: #020204;
