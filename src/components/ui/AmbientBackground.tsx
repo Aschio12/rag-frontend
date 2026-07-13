@@ -4,7 +4,7 @@ import React from "react";
 import { useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-export function AmbientBackground() {
+export const AmbientBackground = React.memo(function AmbientBackground() {
   const shouldReduceMotion = useReducedMotion();
 
   return (
@@ -25,4 +25,4 @@ export function AmbientBackground() {
       <div className="absolute inset-0 scanlines opacity-[0.02]" />
     </div>
   );
-}
+});
