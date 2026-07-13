@@ -3,13 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, FileText, ScrollText, X } from "lucide-react";
+import { ExternalLink, FileText, ScrollText, X, ChevronRight } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { SourceViewerAnimation } from "@/components/animations/SourceViewerAnimation";
 import { getDocumentPreview } from "@/lib/api";
+import { SourceViewerAnimation } from "@/components/animations/SourceViewerAnimation";
 
 interface SourceViewerProps {
   sources: {
@@ -48,97 +47,138 @@ export default function SourceViewer({ sources, open, onClose }: SourceViewerPro
   return (
     <SourceViewerAnimation
       isOpen={open}
-      className="fixed right-0 top-0 z-40 flex h-dvh w-full max-w-lg flex-col border-l bg-background shadow-xl"
+      className="fixed right-0 top-0 z-40 flex h-dvh w-full max-w-2xl flex-col border-l border-white/5 bg-background shadow-2xl"
     >
-          <div className="flex items-center justify-between border-b px-4 py-3">
-            <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold">Source Viewer</h3>
-              <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                {sources.length} sources
-              </span>
-            </div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
-              <X className="h-4 w-4" />
-            </Button>
+      <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-500/10">
+            <FileText className="h-3.5 w-3.5 text-purple-400" />
           </div>
+          <h3 className="text-sm font-medium text-foreground/80">Source Viewer</h3>
+          <span className="rounded-md bg-white/[0.03] px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground/40">
+            {sources.length}
+          </span>
+        </div>
+        <motion.button
+          onClick={onClose}
+          whileHover={{ scale: 1.05, rotate: 90 }}
+          whileTap={{ scale: 0.95 }}
+          className="rounded-lg p-1.5 text-muted-foreground/40 hover:text-foreground hover:bg-white/5 transition-all"
+        >
+          <X className="h-4 w-4" />
+        </motion.button>
+      </div>
 
-          <div className="flex flex-1 overflow-hidden">
-            {/* Source list */}
-            <div className="w-1/2 overflow-y-auto border-r p-2 space-y-1.5 scrollbar-thin">
-              {sources.map((src, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleSelect(i)}
-                  className={cn(
-                    "w-full rounded-lg border p-2.5 text-left transition-colors",
-                    selectedSource === i
-                      ? "border-primary/30 bg-primary/5"
-                      : "border-transparent hover:bg-accent/50",
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="text-[11px] font-medium truncate">
-                      {src.filename || src.doc_id.slice(0, 8)}
-                    </span>
-                    <span className="shrink-0 rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">
-                      {(src.score * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                  {src.page_number ? (
-                    <p className="mt-0.5 text-[10px] text-muted-foreground/60">Page {src.page_number}</p>
-                  ) : null}
-                  <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground/80 line-clamp-3">
-                    {src.text}
-                  </p>
-                </button>
-              ))}
-            </div>
-
-            {/* Preview pane */}
-            <div className="flex w-1/2 flex-col">
-              {previewUrl ? (
-                <div className="flex-1 overflow-auto">
-                  {imgLoading && (
-                    <Skeleton className="h-48 w-full rounded-none" />
-                  )}
-                  <Image
-                    src={previewUrl}
-                    alt="Document preview"
-                    width={800}
-                    height={600}
-                    className={cn("w-full h-auto", imgLoading && "hidden")}
-                    onLoad={() => setImgLoading(false)}
-                    unoptimized
-                  />
-                </div>
-              ) : selectedSource !== null ? (
-                <div className="flex-1 overflow-y-auto p-3">
-                  <div className="rounded-lg bg-muted/30 p-3">
-                    <p className="text-[11px] leading-relaxed text-muted-foreground">
-                      <mark className="rounded bg-yellow-200/30 px-0.5 text-foreground">
-                        {sources[selectedSource]?.text}
-                      </mark>
-                    </p>
-                  </div>
-                  <a
-                    href={previewUrl || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 flex items-center gap-1 text-[10px] text-blue-500 hover:underline"
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                    Open in new tab
-                  </a>
-                </div>
-              ) : (
-                <div className="flex flex-1 flex-col items-center justify-center gap-2">
-                  <ScrollText className="h-6 w-6 text-muted-foreground/20" />
-                  <p className="text-xs text-muted-foreground/40">Select a source to preview</p>
-                </div>
+      <div className="flex flex-1 overflow-hidden">
+        <div className="w-1/2 overflow-y-auto border-r border-white/5 p-2 space-y-1 scrollbar-thin">
+          {sources.map((src, i) => (
+            <motion.button
+              key={i}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.03 }}
+              onClick={() => handleSelect(i)}
+              className={cn(
+                "w-full rounded-xl border p-3 text-left transition-all duration-200",
+                selectedSource === i
+                  ? "border-purple-500/20 bg-purple-500/5"
+                  : "border-transparent hover:border-white/5 hover:bg-white/[0.02]",
               )}
-            </div>
-          </div>
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <FileText className="h-3 w-3 shrink-0 text-muted-foreground/30" />
+                  <span className="text-[11px] font-medium truncate text-foreground/70">
+                    {src.filename || src.doc_id.slice(0, 8)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <span
+                    className={cn(
+                      "rounded-md px-1 py-0.5 text-[9px] font-mono",
+                      src.score > 0.8
+                        ? "bg-emerald-500/10 text-emerald-400"
+                        : src.score > 0.5
+                          ? "bg-amber-500/10 text-amber-400"
+                          : "bg-red-500/10 text-red-400",
+                    )}
+                  >
+                    {(src.score * 100).toFixed(0)}%
+                  </span>
+                  {selectedSource === i && <ChevronRight className="h-3 w-3 text-purple-400" />}
+                </div>
+              </div>
+              {src.page_number ? (
+                <p className="mt-1 text-[10px] text-muted-foreground/40">Page {src.page_number}</p>
+              ) : null}
+              <p className="mt-1.5 text-[10px] leading-relaxed text-muted-foreground/50 line-clamp-3">
+                {src.text}
+              </p>
+            </motion.button>
+          ))}
+        </div>
+
+        <div className="flex w-1/2 flex-col bg-white/[0.01]">
+          <AnimatePresence mode="wait">
+            {previewUrl ? (
+              <motion.div
+                key="preview"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex-1 overflow-auto"
+              >
+                {imgLoading && <Skeleton className="h-48 w-full rounded-none" />}
+                <Image
+                  src={previewUrl}
+                  alt="Document preview"
+                  width={800}
+                  height={600}
+                  className={cn("w-full h-auto", imgLoading && "hidden")}
+                  onLoad={() => setImgLoading(false)}
+                  unoptimized
+                />
+              </motion.div>
+            ) : selectedSource !== null ? (
+              <motion.div
+                key="text"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex-1 overflow-y-auto p-4"
+              >
+                <div className="rounded-xl bg-white/[0.02] border border-white/5 p-4">
+                  <p className="text-[11px] leading-relaxed text-foreground/70">
+                    <mark className="rounded bg-purple-500/10 px-0.5 text-foreground/90">
+                      {sources[selectedSource]?.text}
+                    </mark>
+                  </p>
+                </div>
+                <a
+                  href={previewUrl || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 flex items-center gap-1 text-[10px] text-purple-400/60 hover:text-purple-400 transition-colors"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Open in new tab
+                </a>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-1 flex-col items-center justify-center gap-3"
+              >
+                <ScrollText className="h-8 w-8 text-muted-foreground/10" />
+                <p className="text-xs text-muted-foreground/25">Select a source to preview</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
     </SourceViewerAnimation>
   );
 }
