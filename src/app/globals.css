@@ -5,6 +5,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* AETHER-OS 2999: Space Canvas */
+  --color-space-black: #020204;
+  --color-space-deep: #05050c;
+  --color-space-panel: rgba(10, 10, 20, 0.6);
   --color-background: #ffffff;
   --color-foreground: #0a0a0b;
   --color-muted: #f4f4f5;
