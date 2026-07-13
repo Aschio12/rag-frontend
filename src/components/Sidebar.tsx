@@ -3,18 +3,25 @@
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { motion } from "framer-motion";
 import {
+  Archive,
   Bot,
   ChevronLeft,
   ChevronRight,
   FileText,
+  Folder,
   FolderKanban,
   Home,
   Library,
   MessagesSquare,
+  Pencil,
+  Pin,
   Plus,
   Search,
   Settings,
+  Tags,
+  Trash2,
   User,
+  X,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -190,14 +197,15 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
               <div className="mb-1 space-y-0.5">
                 {folders.map((folder) => (
                   <div key={folder.id} className="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] text-muted-foreground/60">
-                    <span>📁 {folder.name}</span>
+                    <Folder className="h-3 w-3 shrink-0 text-muted-foreground/60" />
+                    <span className="truncate">{folder.name}</span>
                     <span className="ml-auto text-[9px]">{folder.conversationIds.length}</span>
                     {onDeleteFolder && (
                       <button
                         onClick={(e) => { e.stopPropagation(); onDeleteFolder(folder.id); }}
                         className="ml-0.5 rounded p-0.5 text-muted-foreground/30 hover:text-destructive transition-colors"
                       >
-                        ✕
+                        <X className="h-3 w-3" />
                       </button>
                     )}
                   </div>
@@ -210,6 +218,12 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                   const name = prompt("Folder name:");
                   if (name?.trim()) onCreateFolder(name.trim());
                 }}
+                className="mb-1 flex w-full items-center gap-1 rounded-md px-2 py-1 text-[10px] text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-colors"
+              >
+                <Folder className="h-3 w-3" />
+                <span>New Folder</span>
+              </button>
+            )}
                 className="mb-1 flex w-full items-center gap-1 rounded-md px-2 py-1 text-[10px] text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-colors"
               >
                 + New Folder
@@ -230,7 +244,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                           : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                       )}
                     >
-                      {conv.pinned && <span className="text-[10px] text-amber-500 shrink-0">📌</span>}
+                      {conv.pinned && <Pin className="h-3 w-3 text-amber-500 shrink-0" />}
                       <span className="truncate">{conv.title}</span>
                       {conv.tags && conv.tags.length > 0 && (
                         <span className="ml-auto flex gap-0.5">
@@ -254,10 +268,10 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                       {onAutoRename && (
                         <button
                           onClick={(e) => { e.stopPropagation(); onAutoRename(conv.id); }}
-                          className="rounded p-0.5 text-[10px] text-muted-foreground/40 hover:text-foreground transition-colors"
+                          className="rounded p-0.5 text-muted-foreground/40 hover:text-foreground transition-colors"
                           title="Auto-rename"
                         >
-                          ✏️
+                          <Pencil className="h-3 w-3" />
                         </button>
                       )}
                       {onAddTag && (
@@ -267,26 +281,26 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                             const tag = prompt("Add tag:");
                             if (tag?.trim()) onAddTag(conv.id, tag.trim());
                           }}
-                          className="rounded p-0.5 text-[10px] text-muted-foreground/40 hover:text-foreground transition-colors"
+                          className="rounded p-0.5 text-muted-foreground/40 hover:text-foreground transition-colors"
                           title="Add tag"
                         >
-                          🏷️
+                          <Tags className="h-3 w-3" />
                         </button>
                       )}
                       {onPinConversation && (
                         <button
                           onClick={(e) => { e.stopPropagation(); onPinConversation(conv.id); }}
-                          className={cn("rounded p-0.5 text-[10px] transition-colors", conv.pinned ? "text-amber-500" : "text-muted-foreground/40 hover:text-muted-foreground")}
+                          className={cn("rounded p-0.5 transition-colors", conv.pinned ? "text-amber-500" : "text-muted-foreground/40 hover:text-muted-foreground")}
                         >
-                          📌
+                          <Pin className="h-3 w-3" />
                         </button>
                       )}
                       {onArchiveConversation && (
                         <button
                           onClick={(e) => { e.stopPropagation(); onArchiveConversation(conv.id); }}
-                          className="rounded p-0.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                          className="rounded p-0.5 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
                         >
-                          📦
+                          <Archive className="h-3 w-3" />
                         </button>
                       )}
                       {onMoveToFolder && folders && folders.length > 0 && (
@@ -296,7 +310,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                           value={conv.folderId || ""}
                           className="rounded border-none bg-transparent text-[9px] text-muted-foreground/40 outline-none cursor-pointer"
                         >
-                          <option value="">📁</option>
+                          <option value="">Folder</option>
                           {folders.map((f) => (
                             <option key={f.id} value={f.id}>{f.name}</option>
                           ))}
@@ -306,9 +320,9 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                       {onDeleteConversation && (
                         <button
                           onClick={(e) => { e.stopPropagation(); onDeleteConversation(conv.id); }}
-                          className="rounded p-0.5 text-[10px] text-muted-foreground/40 hover:text-destructive transition-colors"
+                          className="rounded p-0.5 text-muted-foreground/40 hover:text-destructive transition-colors"
                         >
-                          ✕
+                          <Trash2 className="h-3 w-3" />
                         </button>
                       )}
                     </div>
@@ -343,7 +357,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
                               className="rounded p-0.5 text-[10px] text-muted-foreground/40 hover:text-foreground transition-colors"
                               title="Unarchive"
                             >
-                              📦
+                              <Archive className="h-3 w-3" />
                             </button>
                           )}
                         </div>
