@@ -188,7 +188,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
           )}
         </div>
 
-        <Separator className="mb-2" />
+        <Separator className="mb-2 bg-white/5" />
 
         <nav className="space-y-0.5 px-2">
           <StaggerContainer staggerDelay={0.04} delayChildren={0.05} direction="none">
@@ -401,7 +401,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
           </div>
         )}
 
-        <Separator className="my-2" />
+        <Separator className="my-2 bg-white/5" />
 
         <div className="space-y-0.5 px-2">
           <StaggerContainer staggerDelay={0.04} delayChildren={0.05} direction="none">
@@ -421,7 +421,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
           </StaggerContainer>
         </div>
 
-        <Separator className="my-2" />
+        <Separator className="my-2 bg-white/5" />
 
         <div className={cn("px-2", collapsed && "flex justify-center")}>
           <Button
