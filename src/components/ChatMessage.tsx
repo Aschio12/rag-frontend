@@ -28,6 +28,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import type { AgentStepEvent, Source } from "@/lib/api";
 import AgentStepsDisplay from "@/components/AgentStepsDisplay";
 import { cn } from "@/lib/utils";
+import { ChatMessageAnimation } from "@/components/animations/ChatMessageAnimation";
 
 interface Props {
   id: string;
@@ -179,14 +180,15 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
   }, [propRating, id, onRate]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
+    <ChatMessageAnimation
+      role={role}
       className={cn("flex gap-3 group", isUser ? "flex-row-reverse" : "flex-row")}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
     >
+      <div
+        onMouseEnter={() => setShowActions(true)}
+        onMouseLeave={() => setShowActions(false)}
+        className="contents"
+      >
       <Avatar className={cn("mt-0.5 h-7 w-7 shrink-0", isUser ? "bg-primary" : "bg-gradient-to-br from-blue-500 to-purple-600")}>
         <AvatarFallback className="text-[10px] text-white">
           {isUser ? <User className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
@@ -479,7 +481,7 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
           </div>
         )}
       </div>
-    </motion.div>
+    </ChatMessageAnimation>
   );
 });
 
