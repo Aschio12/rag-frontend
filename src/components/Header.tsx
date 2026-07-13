@@ -73,9 +73,13 @@ export default function Header({
           </Tooltip>
         </TooltipProvider>
 
-        <div className="flex items-center gap-2">
-          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          <h2 className="text-sm font-medium truncate max-w-48">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#00ff87] animate-pulse shadow-[0_0_6px_rgba(0,255,135,0.5)]" />
+            <span className="text-xs font-mono text-gray-500 tracking-wider">AETHER_OS_v2.9.9</span>
+          </div>
+          <div className="w-px h-4 bg-white/10" />
+          <h2 className="text-sm font-light font-mono tracking-widest uppercase truncate max-w-48">
             {activeView === "chats" && conversation ? conversation.title : (viewTitles[activeView] || "Chats")}
           </h2>
         </div>
