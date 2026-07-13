@@ -8,6 +8,7 @@ import { ExternalLink, FileText, ScrollText, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { SourceViewerAnimation } from "@/components/animations/SourceViewerAnimation";
 import { getDocumentPreview } from "@/lib/api";
 
 interface SourceViewerProps {
@@ -45,15 +46,10 @@ export default function SourceViewer({ sources, open, onClose }: SourceViewerPro
   };
 
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ x: "100%" }}
-          animate={{ x: 0 }}
-          exit={{ x: "100%" }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed right-0 top-0 z-40 flex h-dvh w-full max-w-lg flex-col border-l bg-background shadow-xl"
-        >
+    <SourceViewerAnimation
+      isOpen={open}
+      className="fixed right-0 top-0 z-40 flex h-dvh w-full max-w-lg flex-col border-l bg-background shadow-xl"
+    >
           <div className="flex items-center justify-between border-b px-4 py-3">
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4 text-muted-foreground" />
@@ -143,8 +139,6 @@ export default function SourceViewer({ sources, open, onClose }: SourceViewerPro
               )}
             </div>
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    </SourceViewerAnimation>
   );
 }
