@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Conversation, Folder } from "@/lib/store";
+import { StaggerContainer } from "@/components/animations/StaggerContainer";
 
 interface NavItem {
   icon: typeof Home;
@@ -118,46 +119,48 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
         <Separator className="mb-2" />
 
         <nav className="space-y-0.5 px-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeView === item.id;
-            const isHovered = hoveredItem === item.id;
-            return (
-              <Tooltip key={item.id} open={collapsed ? isHovered : undefined}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => setActiveView(item.id)}
-                    onMouseEnter={() => setHoveredItem(item.id)}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    className={cn(
-                      "relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
-                      isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                      collapsed && "justify-center px-2",
-                    )}
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="sidebar-active"
-                        className="absolute inset-0 rounded-lg bg-primary/10"
-                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                      />
-                    )}
-                    <Icon className={cn("h-4 w-4 shrink-0", isActive && "text-primary")} />
-                    {!collapsed && (
-                      <span className="z-10 truncate">{item.label}</span>
-                    )}
-                  </button>
-                </TooltipTrigger>
-                {collapsed && (
-                  <TooltipContent side="right" className="text-xs">
-                    {item.label}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            );
-          })}
+          <StaggerContainer staggerDelay={0.04} delayChildren={0.05} direction="none">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeView === item.id;
+              const isHovered = hoveredItem === item.id;
+              return (
+                <Tooltip key={item.id} open={collapsed ? isHovered : undefined}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setActiveView(item.id)}
+                      onMouseEnter={() => setHoveredItem(item.id)}
+                      onMouseLeave={() => setHoveredItem(null)}
+                      className={cn(
+                        "relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                        collapsed && "justify-center px-2",
+                      )}
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="sidebar-active"
+                          className="absolute inset-0 rounded-lg bg-primary/10"
+                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                      <Icon className={cn("h-4 w-4 shrink-0", isActive && "text-primary")} />
+                      {!collapsed && (
+                        <span className="z-10 truncate">{item.label}</span>
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  {collapsed && (
+                    <TooltipContent side="right" className="text-xs">
+                      {item.label}
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              );
+            })}
+          </StaggerContainer>
         </nav>
 
         {!collapsed && conversations && (
@@ -355,46 +358,48 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
         <Separator className="my-2" />
 
         <div className="space-y-0.5 px-2">
-          {bottomItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeView === item.id;
-            const isHovered = hoveredItem === item.id;
-            return (
-              <Tooltip key={item.id} open={collapsed ? isHovered : undefined}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => setActiveView(item.id)}
-                    onMouseEnter={() => setHoveredItem(item.id)}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    className={cn(
-                      "relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
-                      isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                      collapsed && "justify-center px-2",
-                    )}
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="sidebar-active-bottom"
-                        className="absolute inset-0 rounded-lg bg-primary/10"
-                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                      />
-                    )}
-                    <Icon className={cn("h-4 w-4 shrink-0", isActive && "text-primary")} />
-                    {!collapsed && (
-                      <span className="z-10 truncate">{item.label}</span>
-                    )}
-                  </button>
-                </TooltipTrigger>
-                {collapsed && (
-                  <TooltipContent side="right" className="text-xs">
-                    {item.label}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            );
-          })}
+          <StaggerContainer staggerDelay={0.04} delayChildren={0.05} direction="none">
+            {bottomItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeView === item.id;
+              const isHovered = hoveredItem === item.id;
+              return (
+                <Tooltip key={item.id} open={collapsed ? isHovered : undefined}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setActiveView(item.id)}
+                      onMouseEnter={() => setHoveredItem(item.id)}
+                      onMouseLeave={() => setHoveredItem(null)}
+                      className={cn(
+                        "relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                        collapsed && "justify-center px-2",
+                      )}
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="sidebar-active-bottom"
+                          className="absolute inset-0 rounded-lg bg-primary/10"
+                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                      <Icon className={cn("h-4 w-4 shrink-0", isActive && "text-primary")} />
+                      {!collapsed && (
+                        <span className="z-10 truncate">{item.label}</span>
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  {collapsed && (
+                    <TooltipContent side="right" className="text-xs">
+                      {item.label}
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              );
+            })}
+          </StaggerContainer>
         </div>
 
         <Separator className="my-2" />
