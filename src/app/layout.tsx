@@ -5,6 +5,7 @@ import "katex/dist/katex.min.css";
 import "./globals.css";
 import { ToastProvider } from "@/components/Toast";
 import { MotionConfig } from "framer-motion";
+import { AnimatedPageTransition } from "@/components/animations/AnimatedPageTransition";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +34,11 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
         <MotionConfig reducedMotion="user">
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <AnimatedPageTransition>
+              {children}
+            </AnimatedPageTransition>
+          </ToastProvider>
         </MotionConfig>
       </body>
     </html>
