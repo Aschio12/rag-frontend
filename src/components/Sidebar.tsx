@@ -83,6 +83,7 @@ function NavItemButton({
   onSelect,
   onHoverStart,
   onHoverEnd,
+  layoutId = "activeNavGlow",
 }: {
   item: NavItem;
   isActive: boolean;
@@ -91,6 +92,7 @@ function NavItemButton({
   onSelect: () => void;
   onHoverStart: () => void;
   onHoverEnd: () => void;
+  layoutId?: string;
 }) {
   const Icon = item.icon;
   return (
@@ -114,7 +116,7 @@ function NavItemButton({
           >
             {isActive && (
               <motion.div
-                layoutId="activeNavGlow"
+                layoutId={layoutId}
                 className="absolute left-0 w-[2px] h-3/5 bg-gradient-to-b from-[#00f2fe] to-[#7000ff] glow-cyan rounded-full"
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
@@ -401,46 +403,19 @@ export default function Sidebar({ collapsed, setCollapsed, activeView, setActive
 
         <div className="space-y-0.5 px-2">
           <StaggerContainer staggerDelay={0.04} delayChildren={0.05} direction="none">
-            {bottomItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeView === item.id;
-              const isHovered = hoveredItem === item.id;
-              return (
-                <Tooltip key={item.id} open={collapsed ? isHovered : undefined}>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => setActiveView(item.id)}
-                      onMouseEnter={() => setHoveredItem(item.id)}
-                      onMouseLeave={() => setHoveredItem(null)}
-                      className={cn(
-                        "relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
-                        isActive
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                        collapsed && "justify-center px-2",
-                      )}
-                    >
-                      {isActive && (
-                        <motion.div
-                          layoutId="sidebar-active-bottom"
-                          className="absolute inset-0 rounded-lg bg-primary/10"
-                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                        />
-                      )}
-                      <Icon className={cn("h-4 w-4 shrink-0", isActive && "text-primary")} />
-                      {!collapsed && (
-                        <span className="z-10 truncate">{item.label}</span>
-                      )}
-                    </button>
-                  </TooltipTrigger>
-                  {collapsed && (
-                    <TooltipContent side="right" className="text-xs">
-                      {item.label}
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              );
-            })}
+            {bottomItems.map((item) => (
+              <NavItemButton
+                key={item.id}
+                item={item}
+                isActive={activeView === item.id}
+                isHovered={hoveredItem === item.id}
+                collapsed={collapsed}
+                onSelect={() => setActiveView(item.id)}
+                onHoverStart={() => setHoveredItem(item.id)}
+                onHoverEnd={() => setHoveredItem(null)}
+                layoutId="activeNavGlowBottom"
+              />
+            ))}
           </StaggerContainer>
         </div>
 
