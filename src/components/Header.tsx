@@ -48,6 +48,7 @@ export default function Header({
 }: HeaderProps) {
   return (
     <HeaderAnimation className="sticky top-0 z-40 flex h-14 items-center justify-between px-6 py-4 cyber-glass border-0 border-b border-white/5">
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#00f2fe] to-transparent opacity-30" />
       <div className="flex items-center gap-3">
         <TooltipProvider>
           <Tooltip>
