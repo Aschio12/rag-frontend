@@ -26,17 +26,20 @@ export function HeaderAnimation({
       className={className}
       animate={{
         backgroundColor: isScrolled
-          ? "rgba(15, 23, 42, 0.85)"
+          ? "rgba(15, 23, 42, 0.8)"
           : "rgba(15, 23, 42, 0)",
-        backdropFilter: isScrolled ? "blur(20px)" : "blur(0px)",
+        backdropFilter: isScrolled ? "blur(24px) saturate(1.2)" : "blur(0px)",
+        WebkitBackdropFilter: isScrolled ? "blur(24px) saturate(1.2)" : "blur(0px)",
         borderBottom: isScrolled
-          ? "1px solid rgba(124, 58, 237, 0.1)"
+          ? "1px solid rgba(124, 58, 237, 0.08)"
           : "1px solid rgba(124, 58, 237, 0)",
-        y: isScrolled ? 0 : 0,
+        boxShadow: isScrolled
+          ? "0 1px 20px rgba(0, 0, 0, 0.2)"
+          : "0 1px 0px rgba(0, 0, 0, 0)",
       }}
       transition={{
-        duration: 0.3,
-        ease: "easeOut",
+        duration: 0.4,
+        ease: [0.25, 0.1, 0.25, 1],
       }}
     >
       {children}
