@@ -63,17 +63,22 @@ function CodeBlock({ className, children, ...props }: React.HTMLAttributes<HTMLE
   };
 
   return (
-    <div className="group relative my-3 overflow-hidden rounded-lg border bg-[#0a0a0b]">
+    <div className="group relative my-3 overflow-hidden rounded-xl border border-white/5 bg-[#0a0a0b]">
       {lang && (
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-1.5">
-          <span className="text-[11px] font-medium text-white/40">{lang}</span>
-          <span className="text-[9px] text-white/20">{lines.length} lines</span>
+        <div className="flex items-center justify-between border-b border-white/[0.03] px-4 py-2">
+          <div className="flex items-center gap-2">
+            <span className="flex h-2 w-2 rounded-full bg-red-500/60" />
+            <span className="flex h-2 w-2 rounded-full bg-amber-500/60" />
+            <span className="flex h-2 w-2 rounded-full bg-emerald-500/60" />
+            <span className="ml-2 text-[11px] font-medium text-white/30">{lang}</span>
+          </div>
+          <span className="text-[9px] text-white/15">{lines.length} lines</span>
         </div>
       )}
       <div className="relative">
         <pre className={cn("overflow-x-auto p-4 text-sm leading-relaxed", !lang && "p-0")}>
           {showLineNumbers && (
-            <span className="float-left mr-4 select-none text-right text-white/15" aria-hidden>
+            <span className="float-left mr-4 select-none text-right text-white/10" aria-hidden>
               {lines.map((_, i) => (
                 <span key={i} className="block leading-relaxed">{i + 1}</span>
               ))}
@@ -83,14 +88,24 @@ function CodeBlock({ className, children, ...props }: React.HTMLAttributes<HTMLE
             {children}
           </code>
         </pre>
-        <Button
-          variant="ghost"
-          size="icon"
+        <motion.button
           onClick={handleCopy}
-          className="absolute right-2 top-2 h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100 text-white/40 hover:text-white hover:bg-white/10"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="absolute right-2 top-2 h-7 w-7 opacity-0 group-hover:opacity-100 rounded-lg flex items-center justify-center text-white/30 hover:text-white hover:bg-white/5 transition-all"
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-        </Button>
+          {copied ? (
+            <motion.span
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="text-emerald-400"
+            >
+              <Check className="h-3.5 w-3.5" />
+            </motion.span>
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
+        </motion.button>
       </div>
     </div>
   );
@@ -131,12 +146,24 @@ function TypingContent({ content }: { content: string }) {
   useEffect(() => {
     if (displayed >= content.length) return;
     const timer = setTimeout(() => {
-      setDisplayed((prev) => Math.min(prev + 3, content.length));
-    }, 15);
+      const charsPerTick = content.length > 200 ? 5 : 3;
+      setDisplayed((prev) => Math.min(prev + charsPerTick, content.length));
+    }, 12);
     return () => clearTimeout(timer);
   }, [content, displayed]);
   useEffect(() => { queueMicrotask(() => setDisplayed(0)); }, [content]);
-  return <span>{content.slice(0, displayed)}<span className="animate-pulse">▊</span></span>;
+  return (
+    <span className="text-sm leading-relaxed whitespace-pre-wrap">
+      {content.slice(0, displayed)}
+      {displayed < content.length && (
+        <motion.span
+          className="inline-block w-[2px] h-[1em] bg-purple-400 ml-0.5 align-middle"
+          animate={{ opacity: [1, 0.2] }}
+          transition={{ duration: 0.6, repeat: Infinity }}
+        />
+      )}
+    </span>
+  );
 }
 
 const ChatMessage = memo(function ChatMessage(props: Props) {
@@ -200,22 +227,24 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
           className={cn(
             "rounded-2xl px-4 py-2.5 text-sm leading-relaxed relative",
             isUser
-              ? "bg-chat-user text-chat-user-foreground rounded-br-md"
-              : "bg-chat-assistant text-chat-assistant-foreground rounded-bl-md border shadow-xs",
+              ? "bg-purple-500/10 text-foreground/90 rounded-br-sm"
+              : "bg-white/[0.03] text-foreground/90 rounded-bl-sm border border-white/5",
           )}
         >
           {/* Message actions bar */}
-          <div
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={showActions && !editing ? { opacity: 1, y: 0 } : { opacity: 0, y: 4 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
             className={cn(
-              "absolute -top-8 flex items-center gap-0.5 rounded-lg border bg-background px-1 py-0.5 shadow-sm transition-opacity duration-200",
+              "absolute -top-9 flex items-center gap-0.5 rounded-xl border border-white/5 bg-white/[0.03] backdrop-blur-xl px-1 py-0.5 shadow-lg",
               isUser ? "right-0" : "left-0",
-              showActions && !editing ? "opacity-100" : "opacity-0 pointer-events-none",
             )}
           >
-            <TooltipProvider>
+            <TooltipProvider delayDuration={400}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button onClick={handleCopyMessage} className="rounded p-1 text-muted-foreground/60 hover:text-foreground transition-colors">
+                  <button onClick={handleCopyMessage} className="rounded-lg p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-white/5 transition-all">
                     <Copy className="h-3 w-3" />
                   </button>
                 </TooltipTrigger>
@@ -223,10 +252,10 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
               </Tooltip>
             </TooltipProvider>
             {isUser && onEdit && (
-              <TooltipProvider>
+              <TooltipProvider delayDuration={400}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button onClick={() => { setEditText(content); setEditing(true); }} className="rounded p-1 text-muted-foreground/60 hover:text-foreground transition-colors">
+                    <button onClick={() => { setEditText(content); setEditing(true); }} className="rounded-lg p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-white/5 transition-all">
                       <Edit2 className="h-3 w-3" />
                     </button>
                   </TooltipTrigger>
@@ -235,10 +264,10 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
               </TooltipProvider>
             )}
             {onDelete && (
-              <TooltipProvider>
+              <TooltipProvider delayDuration={400}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button onClick={() => onDelete(id)} className="rounded p-1 text-muted-foreground/60 hover:text-destructive transition-colors">
+                    <button onClick={() => onDelete(id)} className="rounded-lg p-1.5 text-muted-foreground/50 hover:text-red-400 hover:bg-red-500/10 transition-all">
                       <Trash2 className="h-3 w-3" />
                     </button>
                   </TooltipTrigger>
@@ -247,10 +276,10 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
               </TooltipProvider>
             )}
             {!isUser && onRegenerate && (
-              <TooltipProvider>
+              <TooltipProvider delayDuration={400}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button onClick={() => onRegenerate(id)} className="rounded p-1 text-muted-foreground/60 hover:text-foreground transition-colors">
+                    <button onClick={() => onRegenerate(id)} className="rounded-lg p-1.5 text-muted-foreground/50 hover:text-purple-400 hover:bg-purple-500/10 transition-all">
                       <RefreshCw className="h-3 w-3" />
                     </button>
                   </TooltipTrigger>
@@ -259,10 +288,10 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
               </TooltipProvider>
             )}
             {onBookmark && !isUser && (
-              <TooltipProvider>
+              <TooltipProvider delayDuration={400}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button onClick={() => onBookmark(id)} className={cn("rounded p-1 transition-colors", bookmarked ? "text-amber-500" : "text-muted-foreground/60 hover:text-foreground")}>
+                    <button onClick={() => onBookmark(id)} className={cn("rounded-lg p-1.5 transition-all", bookmarked ? "text-amber-400 bg-amber-500/10" : "text-muted-foreground/50 hover:text-amber-400 hover:bg-amber-500/10")}>
                       <Bookmark className="h-3 w-3" />
                     </button>
                   </TooltipTrigger>
@@ -271,10 +300,10 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
               </TooltipProvider>
             )}
             {onSpeak && !isUser && (
-              <TooltipProvider>
+              <TooltipProvider delayDuration={400}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button onClick={() => onSpeak(id, content)} className="rounded p-1 text-muted-foreground/60 hover:text-foreground transition-colors">
+                    <button onClick={() => onSpeak(id, content)} className="rounded-lg p-1.5 text-muted-foreground/50 hover:text-foreground hover:bg-white/5 transition-all">
                       <Volume2 className="h-3 w-3" />
                     </button>
                   </TooltipTrigger>
@@ -282,7 +311,7 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
                 </Tooltip>
               </TooltipProvider>
             )}
-          </div>
+          </motion.div>
 
           {editing ? (
             <div className="space-y-2">
@@ -444,42 +473,38 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
         )}
 
         {!isUser && !isStreaming && (
-          <div className="mt-3 flex items-center gap-1.5">
-            <span className="mr-1 text-[11px] text-muted-foreground/50">Was this helpful?</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => handleRate("up")}
-                    className={cn(
-                      "rounded-md p-1 transition-colors",
-                      propRating === "up" ? "text-emerald-500" : "text-muted-foreground/40 hover:text-muted-foreground",
-                    )}
-                  >
-                    <ThumbsUp className="h-3.5 w-3.5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>Helpful</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => handleRate("down")}
-                    className={cn(
-                      "rounded-md p-1 transition-colors",
-                      propRating === "down" ? "text-red-500" : "text-muted-foreground/40 hover:text-muted-foreground",
-                    )}
-                  >
-                    <ThumbsDown className="h-3.5 w-3.5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>Not helpful</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mt-3 flex items-center gap-2"
+          >
+            <span className="text-[10px] text-muted-foreground/30">Was this helpful?</span>
+            <button
+              onClick={() => handleRate("up")}
+              className={cn(
+                "rounded-lg p-1 transition-all duration-200",
+                propRating === "up"
+                  ? "text-emerald-400 bg-emerald-500/10"
+                  : "text-muted-foreground/30 hover:text-muted-foreground/60 hover:bg-white/[0.03]",
+              )}
+            >
+              <ThumbsUp className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => handleRate("down")}
+              className={cn(
+                "rounded-lg p-1 transition-all duration-200",
+                propRating === "down"
+                  ? "text-red-400 bg-red-500/10"
+                  : "text-muted-foreground/30 hover:text-muted-foreground/60 hover:bg-white/[0.03]",
+              )}
+            >
+              <ThumbsDown className="h-3.5 w-3.5" />
+            </button>
+          </motion.div>
         )}
+      </div>
       </div>
     </ChatMessageAnimation>
   );
