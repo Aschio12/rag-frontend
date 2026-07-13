@@ -39,7 +39,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
-        <Suspense fallback={null}>
+        <Suspense fallback={<div className="fixed inset-0 -z-50 bg-[#020204]" />}>
           <AmbientBackground />
         </Suspense>
         <MotionConfig reducedMotion="user">
