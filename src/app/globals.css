@@ -9,6 +9,12 @@
   --color-space-black: #020204;
   --color-space-deep: #05050c;
   --color-space-panel: rgba(10, 10, 20, 0.6);
+
+  /* AETHER-OS 2999: Accent Neon Glows */
+  --color-quantum-cyan: #00f2fe;
+  --color-quantum-violet: #7000ff;
+  --color-quantum-emerald: #00ff87;
+
   --color-background: #ffffff;
   --color-foreground: #0a0a0b;
   --color-muted: #f4f4f5;
