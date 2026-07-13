@@ -6,6 +6,7 @@ import "./globals.css";
 import { ToastProvider } from "@/components/Toast";
 import { MotionConfig } from "framer-motion";
 import { AnimatedPageTransition } from "@/components/animations/AnimatedPageTransition";
+import { AmbientBackground } from "@/components/ui/AmbientBackground";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
+        <AmbientBackground />
         <MotionConfig reducedMotion="user">
           <ToastProvider>
             <AnimatedPageTransition>
