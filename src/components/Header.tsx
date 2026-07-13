@@ -1,7 +1,6 @@
 "use client";
 
 import { type Dispatch, type SetStateAction } from "react";
-import { motion } from "framer-motion";
 import { Download, PanelLeft, Plus, Share2, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
