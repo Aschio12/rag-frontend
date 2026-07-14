@@ -55,9 +55,10 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
   return (
     <ChatInputAnimation
       isExpanded={hasText}
-      className="cyber-glass bg-black/60 rounded-xl px-4 py-3 focus-within:border-[#00f2fe]/50 transition-all duration-500"
+      className="cyber-glass bg-black/60 rounded-xl px-4 py-3 focus-within:border-[#00f2fe]/50 transition-all duration-500 relative"
     >
-      <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-3xl items-end gap-2">
+      <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#00f2fe]/20 to-transparent" />
+      <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-3xl items-end gap-2 rounded-lg border border-white/5 p-1">
         <div className="relative flex-1">
           <textarea
             ref={textRef}
@@ -69,7 +70,7 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
             rows={1}
             className={cn(
               "block w-full resize-none rounded-lg px-4 py-2.5 pr-12 outline-none transition-all duration-300",
-              "bg-transparent border-none focus:ring-0 text-white placeholder-gray-500 font-mono text-sm tracking-wide",
+              "bg-transparent border-none focus:ring-0 text-white placeholder-gray-500 font-mono text-sm tracking-wide caret-[#00f2fe]",
               "disabled:opacity-50",
             )}
           />
