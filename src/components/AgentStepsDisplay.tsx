@@ -38,7 +38,7 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
     <motion.div
       initial={{ opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-3 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden"
+      className="mb-3 cyber-glass bg-[#030307]/50 rounded-xl border border-white/5 overflow-hidden"
     >
       <motion.button
         onClick={() => setCollapsed(!collapsed)}
@@ -74,8 +74,11 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
             </span>
           )}
           {!isComplete && !hasError && (
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/40">
-              <Clock className="h-3 w-3 animate-pulse" />
+            <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground/40">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00f2fe] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00f2fe]" />
+              </span>
               Running...
             </span>
           )}
@@ -123,7 +126,7 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
                   {searchQueries.map((q, i) => (
                     <span
                       key={i}
-                      className="rounded-full bg-blue-500/10 text-blue-400 px-2 py-0.5 text-[9px] font-medium"
+                      className="rounded-full bg-[#00f2fe]/10 text-[#00f2fe] px-2 py-0.5 text-[9px] font-medium border border-[#00f2fe]/10"
                     >
                       {q}
                     </span>
@@ -159,7 +162,7 @@ export default function AgentStepsDisplay({ steps }: AgentStepsDisplayProps) {
                     >
                       {plan && (
                         <div>
-                          <p className="text-[10px] font-medium text-violet-400 mb-1">Plan</p>
+                          <p className="text-[10px] font-medium text-[#00f2fe] mb-1">Plan</p>
                           <pre className="whitespace-pre-wrap text-[10px] text-muted-foreground/60 bg-white/[0.02] rounded-lg p-2.5 border border-white/5">
                             {plan}
                           </pre>
