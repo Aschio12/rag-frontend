@@ -13,28 +13,22 @@ export function ChatMessageAnimation({
   role,
   className,
 }: ChatMessageAnimationProps) {
-  const isUser = role === "user";
-
   return (
     <motion.div
       className={className}
       initial={{
         opacity: 0,
-        y: 20,
-        scale: 0.95,
-        x: isUser ? 20 : -20,
+        y: 15,
+        scale: 0.98,
       }}
       animate={{
         opacity: 1,
         y: 0,
         scale: 1,
-        x: 0,
       }}
       transition={{
-        type: "spring",
-        stiffness: 200,
-        damping: 25,
-        mass: 1,
+        duration: 0.4,
+        ease: [0.16, 1, 0.3, 1],
       }}
     >
       {children}
