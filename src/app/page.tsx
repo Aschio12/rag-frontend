@@ -716,7 +716,7 @@ export default function Home() {
                       </motion.div>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-6 px-4">
                       {messages.map((m) => (
                         <ChatMessage
                           key={m.id}
