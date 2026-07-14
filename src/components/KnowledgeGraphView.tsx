@@ -47,7 +47,7 @@ export default function KnowledgeGraphView({ data, loading }: Props) {
             id: n.id,
             label: n.label,
             title: n.type || "",
-            color: n.type === "concept" ? "#6366f1" : n.type === "person" ? "#f59e0b" : n.type === "place" ? "#10b981" : "#8b5cf6",
+            color: n.type === "concept" ? "#00f2fe" : n.type === "person" ? "#7000ff" : n.type === "place" ? "#00ff87" : "#8b5cf6",
             borderWidth: 0,
             size: 20,
             font: { color: "#e4e4e7", size: 11 },
@@ -60,7 +60,7 @@ export default function KnowledgeGraphView({ data, loading }: Props) {
             to: e.target,
             label: e.label || "",
             arrows: "to",
-            color: { color: "#52525b", highlight: "#818cf8" },
+            color: { color: "#7000ff", highlight: "#00f2fe" },
             font: { size: 9, color: "#a1a1aa", strokeWidth: 0 },
             width: 1,
           })),
@@ -94,15 +94,15 @@ export default function KnowledgeGraphView({ data, loading }: Props) {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground/60" />
+      <div className="flex h-64 items-center justify-center cyber-glass bg-[#030307]/50 rounded-xl border border-white/5">
+        <Loader2 className="h-5 w-5 animate-spin text-[#00f2fe]" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg border bg-muted/20">
+      <div className="flex h-64 items-center justify-center cyber-glass bg-[#030307]/50 rounded-xl border border-white/5">
         <p className="text-xs text-muted-foreground/60">Failed to render graph</p>
       </div>
     );
@@ -110,7 +110,7 @@ export default function KnowledgeGraphView({ data, loading }: Props) {
 
   if (!data || data.nodes.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg border bg-muted/20">
+      <div className="flex h-64 items-center justify-center cyber-glass bg-[#030307]/50 rounded-xl border border-white/5">
         <p className="text-xs text-muted-foreground/40">Select a document to explore its knowledge graph</p>
       </div>
     );
@@ -120,9 +120,9 @@ export default function KnowledgeGraphView({ data, loading }: Props) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="overflow-hidden rounded-lg border"
+      className="cyber-glass bg-[#030307]/50 rounded-xl p-5 border border-white/5 glow-violet/5"
     >
-      <div ref={containerRef} style={{ height: 400, width: "100%" }} />
+      <div ref={containerRef} style={{ height: 360, width: "100%" }} />
     </motion.div>
   );
 }
