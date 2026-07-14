@@ -227,7 +227,7 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
           className={cn(
             "rounded-2xl px-4 py-2.5 text-sm leading-relaxed relative",
             isUser
-              ? "bg-purple-500/10 text-foreground/90 rounded-br-sm"
+              ? "bg-white/[0.02] border border-white/10 text-foreground/90"
               : "bg-white/[0.03] text-foreground/90 rounded-bl-sm border border-white/5",
           )}
         >
