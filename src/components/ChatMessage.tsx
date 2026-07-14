@@ -482,14 +482,14 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
             transition={{ delay: 0.3 }}
             className="mt-3 flex items-center gap-2"
           >
-            <span className="text-[10px] text-muted-foreground/30">Was this helpful?</span>
+            <span className="text-[10px] text-gray-500/40 font-mono tracking-wider">SYS: FEEDBACK</span>
             <button
               onClick={() => handleRate("up")}
               className={cn(
                 "rounded-lg p-1 transition-all duration-200",
                 propRating === "up"
-                  ? "text-emerald-400 bg-emerald-500/10"
-                  : "text-muted-foreground/30 hover:text-muted-foreground/60 hover:bg-white/[0.03]",
+                  ? "text-emerald-400 glow-emerald bg-emerald-500/10"
+                  : "text-gray-500/30 hover:text-emerald-400 hover:bg-emerald-500/5",
               )}
             >
               <ThumbsUp className="h-3.5 w-3.5" />
@@ -500,7 +500,7 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
                 "rounded-lg p-1 transition-all duration-200",
                 propRating === "down"
                   ? "text-red-400 bg-red-500/10"
-                  : "text-muted-foreground/30 hover:text-muted-foreground/60 hover:bg-white/[0.03]",
+                  : "text-gray-500/30 hover:text-red-400 hover:bg-red-500/5",
               )}
             >
               <ThumbsDown className="h-3.5 w-3.5" />
