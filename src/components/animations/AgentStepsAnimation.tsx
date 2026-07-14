@@ -21,9 +21,9 @@ const statusIcons: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  pending: "text-purple-500/40",
-  active: "text-purple-300",
-  complete: "text-emerald-400",
+  pending: "text-[#7000ff]/40",
+  active: "text-[#00f2fe]",
+  complete: "text-[#00ff87]",
   error: "text-red-400",
 };
 
@@ -71,17 +71,17 @@ export function AgentStepsAnimation({
             <motion.span
               className={`text-xs ${
                 step.status === "complete"
-                  ? "text-purple-300 line-through opacity-60"
+                  ? "text-[#00ff87]/80 line-through opacity-60"
                   : step.status === "error"
                   ? "text-red-300"
-                  : "text-purple-300/60"
+                  : "text-[#00f2fe]/60"
               }`}
             >
               {step.label}
             </motion.span>
             {step.status === "active" && (
               <motion.div
-                className="w-1 h-1 rounded-full bg-purple-400"
+                className="w-1.5 h-1.5 rounded-full bg-[#00f2fe] shadow-[0_0_6px_rgba(0,242,254,0.6)]"
                 animate={{ opacity: [1, 0] }}
                 transition={{ duration: 0.6, repeat: Infinity }}
               />
