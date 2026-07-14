@@ -829,11 +829,11 @@ export default function Home() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="flex-1 overflow-y-auto scrollbar-thin"
+              className="flex-1 overflow-y-auto scrollbar-thin px-4 py-6"
             >
-              <div className="mx-auto max-w-2xl space-y-6 px-4 py-6">
+              <div className="mx-auto max-w-2xl space-y-6 cyber-glass rounded-2xl p-6 overflow-hidden relative">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-sm">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#00f2fe] to-[#7000ff]">
                     <FileText className="h-4 w-4 text-white" />
                   </div>
                   <div>
