@@ -216,7 +216,7 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
         onMouseLeave={() => setShowActions(false)}
         className="contents"
       >
-      <Avatar className={cn("mt-0.5 h-7 w-7 shrink-0", isUser ? "bg-primary" : "bg-gradient-to-br from-blue-500 to-purple-600")}>
+      <Avatar className={cn("mt-0.5 h-7 w-7 shrink-0", isUser ? "bg-white/10 border border-white/10" : "bg-gradient-to-br from-[#7000ff] to-[#00f2fe]")}>
         <AvatarFallback className="text-[10px] text-white">
           {isUser ? <User className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
         </AvatarFallback>
@@ -225,12 +225,15 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
       <div className={cn("flex max-w-[90%] md:max-w-[80%] flex-col", isUser ? "items-end" : "items-start")}>
         <div
           className={cn(
-            "rounded-2xl px-4 py-2.5 text-sm leading-relaxed relative",
+            "rounded-2xl px-4 py-2.5 text-sm leading-relaxed relative overflow-hidden",
             isUser
               ? "bg-white/[0.02] border border-white/10 text-foreground/90"
-              : "bg-white/[0.03] text-foreground/90 rounded-bl-sm border border-white/5",
+              : "cyber-glass bg-[#0a0a14]/40 text-foreground/90 rounded-bl-sm",
           )}
         >
+          {!isUser && (
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-[#7000ff] to-[#00f2fe] opacity-60" />
+          )}
           {/* Message actions bar */}
           <motion.div
             initial={{ opacity: 0, y: 4 }}
