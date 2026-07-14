@@ -153,7 +153,7 @@ function TypingContent({ content }: { content: string }) {
   }, [content, displayed]);
   useEffect(() => { queueMicrotask(() => setDisplayed(0)); }, [content]);
   return (
-    <span className="text-sm leading-relaxed whitespace-pre-wrap">
+    <span className="text-sm leading-relaxed whitespace-pre-wrap text-gray-200 font-mono tracking-wide">
       {content.slice(0, displayed)}
       {displayed < content.length && (
         <motion.span
@@ -216,9 +216,9 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
         onMouseLeave={() => setShowActions(false)}
         className="contents"
       >
-      <Avatar className={cn("mt-0.5 h-7 w-7 shrink-0", isUser ? "bg-white/10 border border-white/10" : "bg-gradient-to-br from-[#7000ff] to-[#00f2fe]")}>
-        <AvatarFallback className="text-[10px] text-white">
-          {isUser ? <User className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
+      <Avatar className={cn("mt-0.5 h-7 w-7 shrink-0", isUser ? "bg-[#0a0a14] border border-[#7000ff]/50 text-[#7000ff]" : "bg-[#0a0a14] border border-[#00f2fe]/50 glow-cyan text-[#00f2fe]")}>
+        <AvatarFallback className="text-[10px] text-current">
+          {isUser ? <User className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
         </AvatarFallback>
       </Avatar>
 
@@ -341,13 +341,13 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
               </div>
             </div>
           ) : isUser ? (
-            <p className="whitespace-pre-wrap">{content}</p>
+              <p className="whitespace-pre-wrap text-gray-200 font-mono text-sm tracking-wide leading-relaxed">{content}</p>
           ) : isStreaming ? (
             <>
               {agentSteps && agentSteps.length > 0 && (
                 <AgentStepsDisplay steps={agentSteps} />
               )}
-              <div className="text-sm leading-relaxed whitespace-pre-wrap">
+              <div className="text-sm leading-relaxed whitespace-pre-wrap text-gray-200 font-mono tracking-wide">
                 <TypingContent content={content} />
               </div>
             </>
@@ -356,7 +356,7 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
               {agentSteps && agentSteps.length > 0 && (
                 <AgentStepsDisplay steps={agentSteps} />
               )}
-              <div className="prose prose-sm dark:prose-invert max-w-none prose-pre:p-0 prose-code:before:content-none prose-code:after:content-none">
+              <div className="prose prose-sm dark:prose-invert max-w-none prose-pre:p-0 prose-code:before:content-none prose-code:after:content-none text-gray-200 font-mono tracking-wide">
                 <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeHighlight, rehypeKatex]}
@@ -365,8 +365,8 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
                     const isInline = !className;
                     if (isInline) {
                       return (
-                        <code
-                          className="rounded bg-muted px-1.5 py-0.5 text-[13px] font-mono text-foreground"
+                          <code
+                            className="rounded bg-[#1a1a2e] px-1.5 py-0.5 text-[13px] font-mono text-gray-200"
                           {...props}
                         >
                           {children}
