@@ -738,14 +738,14 @@ export default function Home() {
                         />
                       ))}
                       {loading && messages[messages.length - 1]?.content !== "" && (
-                        <div className="flex gap-3">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
+                        <div className="flex gap-3 pl-4">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#7000ff] to-[#00f2fe]">
                             <Sparkles className="h-3.5 w-3.5 text-white" />
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="thinking-dot" />
-                            <span className="thinking-dot" />
-                            <span className="thinking-dot" />
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-[#00ff87] animate-pulse-slow glow-emerald [animation-delay:0ms]" />
+                            <span className="w-2 h-2 rounded-full bg-[#00ff87] animate-pulse-slow glow-emerald [animation-delay:800ms]" />
+                            <span className="w-2 h-2 rounded-full bg-[#00ff87] animate-pulse-slow glow-emerald [animation-delay:1600ms]" />
                           </div>
                         </div>
                       )}
