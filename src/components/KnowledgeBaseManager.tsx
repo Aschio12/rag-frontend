@@ -74,11 +74,11 @@ function InlineInput({
             if (e.key === "Escape") onCancel();
           }}
           placeholder={placeholder}
-          className="flex-1 rounded-lg border border-purple-500/20 bg-purple-950/30 px-2.5 py-1.5 text-[11px] text-purple-200 outline-none placeholder:text-purple-400/30 focus:border-purple-500/40 transition-colors"
+          className="flex-1 rounded-lg border border-[#7000ff]/20 bg-[#7000ff]/10 px-2.5 py-1.5 text-[11px] text-[#00f2fe] outline-none placeholder:text-[#7000ff]/30 focus:border-[#00f2fe]/40 transition-colors"
         />
         <button
           onClick={handleSubmit}
-          className="rounded-lg bg-purple-500/20 px-2 py-1 text-[11px] text-purple-300 hover:bg-purple-500/30 transition-colors"
+          className="rounded-lg bg-[#00f2fe]/20 px-2 py-1 text-[11px] text-[#00f2fe] hover:bg-[#00f2fe]/30 transition-colors"
         >
           <Check className="h-3 w-3" />
         </button>
@@ -201,8 +201,8 @@ export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSe
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             className={cn(
-              "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px]",
-              feedback.type === "success" ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400",
+              "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px] border",
+              feedback.type === "success" ? "bg-[#00ff87]/10 text-[#00ff87] border-[#00ff87]/20" : "bg-red-500/10 text-red-400 border-red-500/20",
             )}
           >
             {feedback.type === "success" ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
