@@ -321,7 +321,7 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
               <textarea
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
-                className="w-full resize-none rounded-lg border bg-background p-2 text-sm outline-none focus:ring-1 focus:ring-primary"
+                className="w-full resize-none rounded-lg border border-white/10 bg-white/[0.02] p-2 text-sm outline-none focus:ring-1 focus:ring-[#00f2fe]/50"
                 rows={3}
                 autoFocus
               />
@@ -437,10 +437,10 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
             className="mt-2 w-full space-y-1.5"
           >
             <div className="flex items-center gap-1.5">
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                {sources.length} source{sources.length > 1 ? "s" : ""}
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-mono tracking-wider text-gray-400 bg-white/5">
+                {sources.length} SOURCE{sources.length > 1 ? "S" : ""}
               </Badge>
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground/60">
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-gray-500/60 border-white/10">
                 Click to view details
               </Badge>
             </div>
@@ -448,7 +448,7 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
               <button
                 key={i}
                 onClick={() => window.dispatchEvent(new CustomEvent("open-source", { detail: { sources, index: i } }))}
-                className="w-full text-left rounded-lg border bg-muted/30 p-2.5 text-xs hover:bg-accent/50 transition-colors"
+                className="w-full text-left rounded-lg border border-white/5 bg-white/[0.02] p-2.5 text-xs hover:bg-white/[0.05] transition-colors"
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium text-muted-foreground flex items-center gap-1">
@@ -467,7 +467,7 @@ const ChatMessage = memo(function ChatMessage(props: Props) {
             {sources.length > 3 && (
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent("open-source", { detail: { sources, index: 0 } }))}
-                className="w-full rounded-lg border border-dashed border-muted-foreground/20 p-2 text-[10px] text-muted-foreground/50 hover:text-foreground hover:bg-accent/30 transition-colors"
+                className="w-full rounded-lg border border-dashed border-white/10 p-2 text-[10px] text-gray-500/50 hover:text-gray-300 hover:bg-white/[0.03] transition-colors"
               >
                 + {sources.length - 3} more sources
               </button>
