@@ -80,14 +80,15 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
             type="button"
             onClick={onToggleAgentic}
             className={cn(
-              "shrink-0 flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all duration-200",
+              "shrink-0 flex items-center gap-1.5 rounded-lg px-2.5 py-2 transition-all duration-200 border",
               agentic
-                ? "bg-purple-500/15 text-purple-400 border border-purple-500/25 shadow-[inset_0_1px_0_rgba(124,58,237,0.1)]"
-                : "bg-white/[0.03] text-muted-foreground/50 hover:text-muted-foreground border border-transparent hover:border-white/5",
+                ? "bg-[#7000ff]/20 text-[#00f2fe] border-[#00f2fe]/30 hover:bg-[#7000ff]/30"
+                : "bg-white/5 text-gray-500 border-white/5 hover:bg-[#7000ff]/20 hover:text-[#00f2fe]",
             )}
             title={agentic ? "Agentic AI mode (multi-agent collaboration)" : "Standard mode"}
           >
-            <Bot className={`h-3 w-3 ${agentic ? "text-purple-400" : ""}`} />
+            <Bot className="h-3.5 w-3.5" />
+            <span className="text-[10px] font-mono tracking-wider uppercase">Agent</span>
             Agent
           </button>
         )}
@@ -96,14 +97,15 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
             type="button"
             onClick={onToggleHybrid}
             className={cn(
-              "shrink-0 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all duration-200",
+              "shrink-0 flex items-center gap-1.5 rounded-lg px-2.5 py-2 transition-all duration-200 border",
               hybrid
-                ? "bg-purple-500/15 text-purple-400 border border-purple-500/25 shadow-[inset_0_1px_0_rgba(124,58,237,0.1)]"
-                : "bg-white/[0.03] text-muted-foreground/50 hover:text-muted-foreground border border-transparent hover:border-white/5",
+                ? "bg-[#7000ff]/20 text-[#00f2fe] border-[#00f2fe]/30 hover:bg-[#7000ff]/30"
+                : "bg-white/5 text-gray-500 border-white/5 hover:bg-[#7000ff]/20 hover:text-[#00f2fe]",
             )}
             title={hybrid ? "Hybrid search enabled (vector + keyword)" : "Vector-only search"}
           >
-            Hybrid
+            <MessageSquare className="h-3.5 w-3.5" />
+            <span className="text-[10px] font-mono tracking-wider uppercase">Hybrid</span>
           </button>
         )}
 
@@ -113,10 +115,10 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
           whileHover={{ scale: hasText && !disabled ? 1.05 : 1 }}
           whileTap={{ scale: hasText && !disabled ? 0.95 : 1 }}
           className={cn(
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-300",
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all duration-300",
             hasText && !disabled
-              ? "bg-gradient-to-br from-purple-600 to-purple-500 text-white shadow-[0_2px_12px_rgba(124,58,237,0.3)] hover:shadow-[0_4px_20px_rgba(124,58,237,0.4)] hover:from-purple-500 hover:to-purple-400"
-              : "bg-white/5 text-muted-foreground/30",
+              ? "bg-gradient-to-r from-[#00f2fe] to-[#7000ff] text-black font-semibold shadow-[0_0_20px_rgba(0,242,254,0.2)] hover:opacity-90 active:scale-95"
+              : "bg-white/5 text-gray-500/30",
           )}
         >
           {disabled ? (
