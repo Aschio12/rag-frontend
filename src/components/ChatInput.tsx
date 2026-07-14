@@ -55,7 +55,7 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
   return (
     <ChatInputAnimation
       isExpanded={hasText}
-      className="border-t bg-background px-4 py-3"
+      className="cyber-glass bg-black/60 rounded-xl px-4 py-3 focus-within:border-[#00f2fe]/50 transition-all duration-500"
     >
       <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-3xl items-end gap-2">
         <div className="relative flex-1">
