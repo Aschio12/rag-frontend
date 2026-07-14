@@ -755,7 +755,7 @@ export default function Home() {
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.8 }}
                           onClick={() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); setUserScrolled(false); }}
-                          className="sticky bottom-2 left-1/2 z-10 mx-auto -translate-x-1/2 rounded-full border bg-background px-3 py-1.5 text-[11px] text-muted-foreground shadow-md hover:bg-accent transition-colors"
+                          className="sticky bottom-2 left-1/2 z-10 mx-auto -translate-x-1/2 rounded-full border border-white/5 bg-white/[0.02] px-3 py-1.5 text-[11px] text-muted-foreground/60 shadow-md hover:text-foreground hover:bg-white/[0.04] hover:border-[#7000ff]/20 transition-all duration-200"
                         >
                           ↓ Scroll to bottom
                         </motion.button>
@@ -771,7 +771,7 @@ export default function Home() {
                             <button
                               key={q}
                               onClick={() => handleFollowUp(q)}
-                              className="rounded-full border border-muted/50 bg-muted/20 px-2.5 py-1 text-[11px] text-muted-foreground/70 hover:bg-muted/40 hover:text-foreground transition-colors"
+                              className="rounded-full border border-white/5 bg-white/[0.02] px-2.5 py-1 text-[11px] text-muted-foreground/70 hover:text-foreground hover:bg-white/[0.04] hover:border-[#7000ff]/20 transition-all duration-200"
                             >
                               {q}
                             </button>
