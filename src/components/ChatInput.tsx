@@ -122,18 +122,18 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
           )}
         >
           {disabled ? (
-            <div className="flex gap-0.5">
-              <span className="typing-dot" />
-              <span className="typing-dot" />
-              <span className="typing-dot" />
+            <div className="flex gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00ff87] animate-pulse-slow glow-emerald" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00ff87] animate-pulse-slow glow-emerald [animation-delay:400ms]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00ff87] animate-pulse-slow glow-emerald [animation-delay:800ms]" />
             </div>
           ) : (
             <ArrowUp className="h-4 w-4" />
           )}
         </motion.button>
       </form>
-      <p className="mt-2 text-center text-[10px] text-muted-foreground/40">
-        RAG Knowledge Chatbot may produce inaccurate information. Verify important facts.
+        <p className="mt-2 text-center text-[9px] text-gray-600/50 font-mono tracking-wider">
+        SYSTEM: RAG_NET v2.9.9 // RESPONSES MAY CONTAIN INACCURACIES
       </p>
     </ChatInputAnimation>
   );
