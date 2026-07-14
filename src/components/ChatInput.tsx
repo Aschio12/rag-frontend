@@ -57,7 +57,7 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
       isExpanded={hasText}
       className="cyber-glass bg-black/60 rounded-xl px-4 py-3 focus-within:border-[#00f2fe]/50 transition-all duration-500 relative"
     >
-      <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#00f2fe]/20 to-transparent" />
+      <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#00f2fe]/20 to-transparent pointer-events-none" />
       <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-3xl items-end gap-2 rounded-lg border border-white/5 p-1">
         <div className="relative flex-1">
           <textarea
