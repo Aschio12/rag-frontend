@@ -159,7 +159,7 @@ export default function SourceViewer({ sources, open, onClose }: SourceViewerPro
                   href={previewUrl || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-2 flex items-center gap-1 text-[10px] text-purple-400/60 hover:text-purple-400 transition-colors"
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-1.5 text-[10px] text-purple-400/60 hover:text-purple-400 hover:bg-white/[0.04] hover:border-[#7000ff]/20 transition-all duration-200"
                 >
                   <ExternalLink className="h-3 w-3" />
                   Open in new tab
