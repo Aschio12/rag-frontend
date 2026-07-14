@@ -92,7 +92,7 @@ export default function StudyToolsPanel({ docId }: Props) {
   };
 
   return (
-    <div className="rounded-xl border border-white/5 bg-white/[0.02] overflow-hidden">
+    <div className="cyber-glass bg-[#030307]/50 rounded-xl border border-white/5 overflow-hidden">
       <div className="flex items-center gap-3 border-b border-white/5 px-3 py-2.5 overflow-x-auto scrollbar-thin">
         <Sparkles className="h-3.5 w-3.5 text-purple-400 shrink-0" />
         <span className="text-[11px] font-medium text-muted-foreground/60 shrink-0">Study Tools</span>
@@ -107,8 +107,8 @@ export default function StudyToolsPanel({ docId }: Props) {
               className={cn(
                 "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] transition-all duration-200 whitespace-nowrap",
                 isActive
-                  ? "bg-purple-500/10 text-purple-300 font-medium"
-                  : "text-muted-foreground/40 hover:text-muted-foreground/70 hover:bg-white/[0.03]",
+                  ? "bg-[#7000ff]/10 text-[#00f2fe] font-medium border border-[#7000ff]/20"
+                  : "text-muted-foreground/40 hover:text-muted-foreground/70 hover:bg-white/[0.03] border border-transparent",
               )}
             >
               <Icon className={cn("h-3 w-3", isActive ? tab.color : "")} />
@@ -130,7 +130,7 @@ export default function StudyToolsPanel({ docId }: Props) {
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 1.2, repeat: Infinity }}
               >
-                <Sparkles className="h-5 w-5 text-purple-400/60" />
+                <Sparkles className="h-5 w-5 text-[#00f2fe]/60" />
               </motion.div>
               <span className="text-xs text-muted-foreground/40">Generating...</span>
             </div>
@@ -156,7 +156,7 @@ export default function StudyToolsPanel({ docId }: Props) {
                     </motion.p>
                   ) : (
                     <p className="text-xs text-muted-foreground/30 text-center py-6">
-                      Click <span className="text-purple-400/60 font-medium">Summary</span> to begin
+                      Click <span className="text-[#00f2fe]/60 font-medium">Summary</span> to begin
                     </p>
                   )}
                 </div>
@@ -170,7 +170,7 @@ export default function StudyToolsPanel({ docId }: Props) {
                         key={flashcardIndex}
                         initial={{ opacity: 0, rotateY: -10 }}
                         animate={{ opacity: 1, rotateY: 0 }}
-                        className="cursor-pointer rounded-xl border border-white/10 p-6 min-h-[140px] flex items-center justify-center bg-gradient-to-b from-white/[0.02] to-transparent"
+                        className="cursor-pointer rounded-xl border border-white/10 p-6 min-h-[140px] flex items-center justify-center bg-gradient-to-b from-[#00f2fe]/[0.02] to-transparent hover:border-[#7000ff]/30 transition-all duration-300"
                         onClick={() => setShowFlashcardAnswer(!showFlashcardAnswer)}
                       >
                         <p className="text-sm text-center leading-relaxed">
@@ -225,7 +225,7 @@ export default function StudyToolsPanel({ docId }: Props) {
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: qi * 0.05 }}
-                        className="rounded-xl border border-white/5 p-3.5"
+                        className="rounded-xl border border-white/5 bg-white/[0.01] p-3.5"
                       >
                         <p className="mb-2.5 text-xs font-medium text-foreground/80">
                           {qi + 1}. {q.question}
@@ -247,7 +247,7 @@ export default function StudyToolsPanel({ docId }: Props) {
                                       ? "bg-red-500/15 text-red-400 border border-red-500/20"
                                       : isAnswered && isCorrect
                                         ? "bg-emerald-500/10 text-emerald-400/60 border border-emerald-500/10"
-                                        : "bg-white/[0.02] text-muted-foreground/60 hover:bg-white/[0.04] border border-transparent",
+                                        : "bg-white/[0.02] text-muted-foreground/60 hover:bg-white/[0.04] hover:border-[#7000ff]/20 border border-transparent",
                                 )}
                                 disabled={isAnswered}
                               >
@@ -269,7 +269,7 @@ export default function StudyToolsPanel({ docId }: Props) {
               {activeTab === "timeline" && (
                 <div className="space-y-3">
                   {timeline.length > 0 ? (
-                    <div className="relative pl-5 border-l border-white/10">
+                    <div className="relative pl-5 border-l border-[#00f2fe]/20">
                       {timeline.map((event, i) => (
                         <motion.div
                           key={i}
@@ -278,8 +278,8 @@ export default function StudyToolsPanel({ docId }: Props) {
                           transition={{ delay: i * 0.05 }}
                           className="relative pb-5 last:pb-0"
                         >
-                          <div className="absolute -left-[11.5px] top-1 h-3 w-3 rounded-full border-2 border-background bg-purple-500 shadow-[0_0_8px_rgba(124,58,237,0.3)]" />
-                          <p className="text-[10px] font-semibold text-purple-400/80">{event.date}</p>
+                          <div className="absolute -left-[11.5px] top-1 h-3 w-3 rounded-full border-2 border-background bg-[#00f2fe] shadow-[0_0_10px_rgba(0,242,254,0.5)]" />
+                          <p className="text-[10px] font-semibold text-[#00f2fe]/80">{event.date}</p>
                           <p className="mt-0.5 text-xs font-medium text-foreground/70">{event.event}</p>
                           {event.description && (
                             <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground/50">{event.description}</p>
@@ -301,7 +301,7 @@ export default function StudyToolsPanel({ docId }: Props) {
                         key={ti}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="overflow-x-auto rounded-xl border border-white/5"
+                        className="overflow-x-auto rounded-xl border border-white/5 bg-white/[0.01]"
                       >
                         {table.caption && (
                           <p className="border-b border-white/5 px-3 py-1.5 text-[11px] font-medium text-muted-foreground/60">
