@@ -47,7 +47,7 @@ export default function SourceViewer({ sources, open, onClose }: SourceViewerPro
   return (
     <SourceViewerAnimation
       isOpen={open}
-      className="fixed right-0 top-0 z-40 flex h-dvh w-full max-w-2xl flex-col border-l border-white/5 bg-background shadow-2xl"
+      className="fixed right-0 top-0 z-40 flex h-dvh w-full max-w-2xl flex-col border-l border-white/5 cyber-glass rounded-l-2xl overflow-hidden"
     >
       <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
         <div className="flex items-center gap-2.5">
