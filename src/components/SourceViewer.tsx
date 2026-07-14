@@ -55,7 +55,7 @@ export default function SourceViewer({ sources, open, onClose }: SourceViewerPro
             <FileText className="h-3.5 w-3.5 text-purple-400" />
           </div>
           <h3 className="text-sm font-medium text-foreground/80">Source Viewer</h3>
-          <span className="rounded-md bg-white/[0.03] px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground/40">
+          <span className="rounded-md bg-[#7000ff]/10 px-1.5 py-0.5 text-[10px] font-mono text-purple-400/80 border border-[#7000ff]/10">
             {sources.length}
           </span>
         </div>
@@ -79,10 +79,10 @@ export default function SourceViewer({ sources, open, onClose }: SourceViewerPro
               transition={{ delay: i * 0.03 }}
               onClick={() => handleSelect(i)}
               className={cn(
-                "w-full rounded-xl border p-3 text-left transition-all duration-200",
+                "w-full rounded-xl border p-3 text-left transition-all duration-300",
                 selectedSource === i
-                  ? "border-purple-500/20 bg-purple-500/5"
-                  : "border-transparent hover:border-white/5 hover:bg-white/[0.02]",
+                  ? "border-purple-500/30 bg-purple-500/10"
+                  : "border-white/5 bg-white/[0.01] hover:border-[#7000ff]/30 hover:bg-white/[0.02]",
               )}
             >
               <div className="flex items-center justify-between gap-2">
@@ -147,8 +147,9 @@ export default function SourceViewer({ sources, open, onClose }: SourceViewerPro
                 exit={{ opacity: 0 }}
                 className="flex-1 overflow-y-auto p-4"
               >
-                <div className="rounded-xl bg-white/[0.02] border border-white/5 p-4">
-                  <p className="text-[11px] leading-relaxed text-foreground/70">
+                <div className="rounded-xl bg-white/[0.02] border border-white/5 p-4 overflow-hidden relative">
+                  <div className="pointer-events-none absolute -inset-40 bg-gradient-to-br from-[#00f2fe]/[0.02] to-transparent" />
+                  <p className="text-[11px] leading-relaxed text-foreground/70 relative">
                     <mark className="rounded bg-purple-500/10 px-0.5 text-foreground/90">
                       {sources[selectedSource]?.text}
                     </mark>
