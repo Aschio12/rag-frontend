@@ -18,11 +18,11 @@ export function ChatInputAnimation({
       className={className}
       animate={{
         borderColor: isExpanded
-          ? "rgba(124, 58, 237, 0.6)"
-          : "rgba(124, 58, 237, 0.15)",
+          ? "rgba(0, 242, 254, 0.4)"
+          : "rgba(0, 242, 254, 0.08)",
         boxShadow: isExpanded
-          ? "0 0 30px rgba(124, 58, 237, 0.15), 0 0 60px rgba(99, 102, 241, 0.1)"
-          : "0 0 0px rgba(124, 58, 237, 0)",
+          ? "0 0 30px rgba(0, 242, 254, 0.1), 0 0 60px rgba(112, 0, 255, 0.08)"
+          : "0 0 0px rgba(0, 242, 254, 0)",
       }}
       transition={{
         type: "spring",
