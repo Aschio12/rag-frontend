@@ -213,8 +213,8 @@ export default function DocumentList({ refreshKey }: Props) {
                       <div className="rounded-xl border border-white/5 overflow-hidden">
                         <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
                           <div className="flex items-center gap-1.5">
-                            <Network className="h-3.5 w-3.5 text-purple-400" />
-                            <span className="text-[11px] font-medium text-muted-foreground">Knowledge Graph</span>
+                            <Network className="h-3.5 w-3.5 text-[#00f2fe]" />
+                            <span className="text-[11px] font-medium text-[#00f2fe]/80">Knowledge Graph</span>
                           </div>
                           <button
                             onClick={() => setSelectedDoc(null)}
@@ -229,8 +229,8 @@ export default function DocumentList({ refreshKey }: Props) {
                       <div className="rounded-xl border border-white/5 overflow-hidden">
                         <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
                           <div className="flex items-center gap-1.5">
-                            <Brain className="h-3.5 w-3.5 text-blue-400" />
-                            <span className="text-[11px] font-medium text-muted-foreground">Mind Map</span>
+                            <Brain className="h-3.5 w-3.5 text-[#00f2fe]" />
+                            <span className="text-[11px] font-medium text-[#00f2fe]/80">Mind Map</span>
                           </div>
                           <button
                             onClick={() => setSelectedDoc(null)}
