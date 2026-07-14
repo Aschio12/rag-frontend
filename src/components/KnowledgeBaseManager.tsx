@@ -258,8 +258,8 @@ export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSe
                 className={cn(
                   "group flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs cursor-pointer transition-all duration-200",
                   selectedKb === kb.id
-                    ? "bg-purple-500/10 text-purple-300"
-                    : "text-muted-foreground/70 hover:bg-white/[0.02] hover:text-muted-foreground",
+                    ? "bg-[#7000ff]/10 text-[#00f2fe] border border-[#7000ff]/20"
+                    : "text-muted-foreground/70 hover:bg-white/[0.02] hover:text-muted-foreground border border-transparent",
                 )}
                 onClick={() => toggleExpand(kb.id)}
               >
@@ -273,9 +273,9 @@ export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSe
                 {(kb.collection_count !== undefined || kb.document_count !== undefined) && (
                   <div className="flex items-center gap-1 mr-1">
                     {kb.collection_count !== undefined && (
-                      <span className="rounded-md bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-mono text-muted-foreground/40">
-                        {kb.collection_count} col
-                      </span>
+                        <span className="rounded-md bg-[#00f2fe]/10 px-1.5 py-0.5 text-[9px] font-mono text-[#00f2fe]/60 border border-[#00f2fe]/10">
+                          {kb.collection_count} col
+                        </span>
                     )}
                   </div>
                 )}
@@ -339,8 +339,8 @@ export default function KnowledgeBaseManager({ selectedKbId, selectedColId, onSe
                         className={cn(
                           "group flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] cursor-pointer transition-all duration-200",
                           selectedColId === col.id
-                            ? "bg-purple-500/10 text-purple-300 font-medium"
-                            : "text-muted-foreground/60 hover:bg-white/[0.02] hover:text-muted-foreground/80",
+                            ? "bg-[#7000ff]/10 text-[#00f2fe] font-medium border border-[#7000ff]/20"
+                            : "text-muted-foreground/60 hover:bg-white/[0.02] hover:text-muted-foreground/80 border border-transparent",
                         )}
                         onClick={() => onSelectCol(col.id)}
                       >
