@@ -68,9 +68,8 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
             disabled={disabled}
             rows={1}
             className={cn(
-              "block w-full resize-none rounded-xl border border-purple-500/10 bg-muted/30 px-4 py-2.5 pr-12 text-sm outline-none transition-all duration-300",
-              "placeholder:text-muted-foreground/40",
-              "focus:border-purple-500/30 focus:bg-background focus:shadow-[0_0_20px_rgba(124,58,237,0.08)]",
+              "block w-full resize-none rounded-lg px-4 py-2.5 pr-12 outline-none transition-all duration-300",
+              "bg-transparent border-none focus:ring-0 text-white placeholder-gray-500 font-mono text-sm tracking-wide",
               "disabled:opacity-50",
             )}
           />
