@@ -138,8 +138,8 @@ export default function DocumentList({ refreshKey }: Props) {
               onClick={() => handleExplore(doc.id, selectedDoc === doc.id ? exploreMode : "knowledge-graph")}
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.03] group-hover:bg-white/[0.05] transition-colors">
-                  <FileText className="h-4 w-4 text-muted-foreground/40" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#00f2fe]/10 to-[#7000ff]/10 border border-white/5">
+                  <FileText className="h-4 w-4 text-[#00f2fe]/70" />
                 </div>
                 <div>
                   <p className="text-sm font-medium leading-tight text-foreground/80 group-hover:text-foreground transition-colors">
@@ -151,7 +151,7 @@ export default function DocumentList({ refreshKey }: Props) {
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                <div className="flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-all duration-300">
                   <button
                     onClick={(e) => { e.stopPropagation(); handleExplore(doc.id, "knowledge-graph"); }}
                     className="rounded-lg p-1.5 text-muted-foreground/40 hover:text-purple-400 hover:bg-purple-500/10 transition-all"
@@ -176,7 +176,7 @@ export default function DocumentList({ refreshKey }: Props) {
                 </div>
                 <Badge
                   variant="secondary"
-                  className="ml-1 text-[9px] font-normal text-muted-foreground/40 bg-white/[0.03] border border-white/5"
+                  className="ml-1 text-[9px] font-normal text-muted-foreground/60 bg-[#7000ff]/5 border border-[#7000ff]/10"
                 >
                   {doc.status}
                 </Badge>
