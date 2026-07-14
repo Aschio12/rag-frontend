@@ -16,6 +16,7 @@ export function ChatInputAnimation({
   return (
     <motion.div
       className={className}
+      style={{ willChange: "border-color, box-shadow" }}
       animate={{
         borderColor: isExpanded
           ? "rgba(0, 242, 254, 0.4)"
