@@ -34,15 +34,16 @@ export async function sendMessage(req: ChatRequest): Promise<ChatResponse> {
   return res.json();
 }
 
-export async function* sendMessageStream(req: ChatRequest): AsyncGenerator<string> {
+export async function* sendMessageStream(req: ChatRequest, signal?: AbortSignal): AsyncGenerator<string> {
   const res = await fetch(`${API_BASE}/api/v1/chat/stream`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(req),
+    signal,
   });
   if (!res.ok) throw new Error(`Chat stream error: ${res.status}`);
   const reader = res.body?.getReader();
-  if (!reader) return;
+  if (!reader) throw new Error("No response body from chat stream");
   const decoder = new TextDecoder();
   let buffer = "";
   while (true) {
@@ -340,7 +341,7 @@ export async function* sendAgenticMessage(params: {
   message: string;
   conversation_id?: string;
   hybrid?: boolean;
-}): AsyncGenerator<AgentStepEvent> {
+}, signal?: AbortSignal): AsyncGenerator<AgentStepEvent> {
   const res = await fetch(`${API_BASE}/api/v1/agent/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -350,6 +351,7 @@ export async function* sendAgenticMessage(params: {
       hybrid: params.hybrid || false,
       top_k: 5,
     }),
+    signal,
   });
   if (!res.ok) throw new Error(`Agent chat error: ${res.status}`);
 

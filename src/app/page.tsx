@@ -194,7 +194,7 @@ export default function Home() {
         if (agenticMode) {
         const steps: import("@/lib/api").AgentStepEvent[] = [];
         let finalAnswer = "";
-        const stream = sendAgenticMessage({ message: text, hybrid: hybridSearch });
+        const stream = sendAgenticMessage({ message: text, hybrid: hybridSearch }, controller.signal);
         for await (const event of stream) {
           if (controller.signal.aborted) break;
           steps.push(event);
@@ -238,7 +238,7 @@ export default function Home() {
         setStreamingContent("");
       } else {
         let accumulated = "";
-        const stream = sendMessageStream({ message: text, hybrid: hybridSearch });
+        const stream = sendMessageStream({ message: text, hybrid: hybridSearch }, controller.signal);
         for await (const chunk of stream) {
           if (controller.signal.aborted) break;
           accumulated += chunk;
@@ -372,7 +372,7 @@ export default function Home() {
       if (agenticMode) {
         const steps: import("@/lib/api").AgentStepEvent[] = [];
         let finalAnswer = "";
-        const stream = sendAgenticMessage({ message: userMsg.content, hybrid: hybridSearch });
+        const stream = sendAgenticMessage({ message: userMsg.content, hybrid: hybridSearch }, controller.signal);
         for await (const event of stream) {
           if (controller.signal.aborted) break;
           steps.push(event);
@@ -416,7 +416,7 @@ export default function Home() {
         setStreamingContent("");
       } else {
         let accumulated = "";
-        const stream = sendMessageStream({ message: userMsg.content, hybrid: hybridSearch });
+        const stream = sendMessageStream({ message: userMsg.content, hybrid: hybridSearch }, controller.signal);
         for await (const chunk of stream) {
           if (controller.signal.aborted) break;
           accumulated += chunk;
