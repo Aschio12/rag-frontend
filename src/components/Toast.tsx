@@ -25,25 +25,25 @@ let toastCounter = 0;
 
 const typeStyles = {
   success: {
-    border: "border-emerald-500/20",
-    bg: "bg-emerald-950/40",
+    border: "border-[#00ff87]/30",
+    bg: "bg-black/90",
     icon: Check,
-    iconColor: "text-emerald-400",
-    glow: "shadow-[0_0_20px_rgba(16,185,129,0.1)]",
+    iconColor: "text-[#00ff87]",
+    glow: "shadow-[0_0_20px_rgba(0,255,135,0.15)]",
   },
   info: {
-    border: "border-purple-500/20",
-    bg: "bg-purple-950/40",
+    border: "border-[#00f2fe]/30",
+    bg: "bg-black/90",
     icon: Info,
-    iconColor: "text-purple-400",
-    glow: "shadow-[0_0_20px_rgba(124,58,237,0.1)]",
+    iconColor: "text-[#00f2fe]",
+    glow: "shadow-[0_0_20px_rgba(0,242,254,0.15)]",
   },
   error: {
-    border: "border-red-500/20",
-    bg: "bg-red-950/40",
+    border: "border-red-500/30",
+    bg: "bg-black/90",
     icon: AlertTriangle,
     iconColor: "text-red-400",
-    glow: "shadow-[0_0_20px_rgba(239,68,68,0.1)]",
+    glow: "shadow-[0_0_20px_rgba(239,68,68,0.15)]",
   },
 };
 
@@ -65,7 +65,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed top-4 right-4 z-50 flex flex-col items-end gap-2 pointer-events-none">
+      <div className="fixed top-4 right-4 z-50 flex flex-col items-end gap-2 pointer-events-none font-mono">
         <AnimatePresence mode="popLayout">
           {toasts.map((toast, i) => {
             const styles = typeStyles[toast.type];
@@ -93,20 +93,19 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   transition: { duration: 0.15, ease: "easeIn" },
                 }}
                 className={cn(
-                  "pointer-events-auto flex items-center gap-2.5 rounded-xl border px-4 py-2.5 text-sm shadow-lg backdrop-blur-xl min-w-[260px] cursor-pointer",
+                  "pointer-events-auto flex items-center gap-2.5 rounded-none border px-4 py-2.5 text-xs tracking-wider shadow-lg backdrop-blur-xl min-w-[260px] cursor-pointer cyber-glass bg-black/90 text-white",
                   styles.border,
-                  styles.bg,
                   styles.glow,
                 )}
                 onClick={() => removeToast(toast.id)}
               >
                 <Icon className={cn("h-4 w-4 shrink-0", styles.iconColor)} />
-                <span className="text-xs text-purple-100/80 flex-1">{toast.message}</span>
+                <span className="text-xs tracking-wider text-white/80 flex-1">{toast.message}</span>
                 <button
                   onClick={(e) => { e.stopPropagation(); removeToast(toast.id); }}
-                  className="rounded-lg p-0.5 opacity-50 hover:opacity-100 hover:bg-white/5 transition-all"
+                  className="rounded-none p-0.5 opacity-50 hover:opacity-100 hover:bg-white/5 transition-all border border-white/10"
                 >
-                  <X className="h-3 w-3 text-purple-300/50" />
+                  <X className="h-3 w-3 text-white/50" />
                 </button>
               </motion.div>
             );
