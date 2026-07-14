@@ -129,8 +129,12 @@ export default function DocumentList({ refreshKey }: Props) {
               delay: i * 0.04,
             }}
           >
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
             <div
-              className="group flex items-center justify-between rounded-xl border border-transparent px-3 py-2.5 transition-all duration-200 hover:border-white/5 hover:bg-white/[0.02] cursor-pointer"
+              className="group flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.01] px-3 py-2.5 transition-all duration-300 cursor-pointer hover:border-[#7000ff]/30"
               onClick={() => handleExplore(doc.id, selectedDoc === doc.id ? exploreMode : "knowledge-graph")}
             >
               <div className="flex items-center gap-3">
@@ -178,6 +182,7 @@ export default function DocumentList({ refreshKey }: Props) {
                 </Badge>
               </div>
             </div>
+            </motion.div>
 
             <AnimatePresence>
               {selectedDoc === doc.id && (
