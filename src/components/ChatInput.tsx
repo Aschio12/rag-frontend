@@ -70,7 +70,7 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
             rows={1}
             className={cn(
               "block w-full resize-none rounded-lg px-4 py-2.5 pr-12 outline-none transition-all duration-300",
-              "bg-transparent border-none focus:ring-0 text-white placeholder-gray-500 font-mono text-sm tracking-wide caret-[#00f2fe]",
+              "bg-transparent border-none focus:ring-0 text-white placeholder-gray-500/50 font-mono text-sm tracking-wide caret-[#00f2fe]",
               "disabled:opacity-50",
             )}
           />
@@ -81,7 +81,7 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
             type="button"
             onClick={onToggleAgentic}
             className={cn(
-              "shrink-0 flex items-center gap-1.5 rounded-lg px-2.5 py-2 transition-all duration-200 border",
+              "shrink-0 flex items-center gap-1.5 rounded-lg px-2.5 py-2 transition-all duration-300 border",
               agentic
                 ? "bg-[#7000ff]/20 text-[#00f2fe] border-[#00f2fe]/30 hover:bg-[#7000ff]/30"
                 : "bg-white/5 text-gray-500 border-white/5 hover:bg-[#7000ff]/20 hover:text-[#00f2fe]",
@@ -116,7 +116,7 @@ export default function ChatInput({ onSend, disabled, placeholder, hybrid, onTog
           whileHover={{ scale: hasText && !disabled ? 1.05 : 1 }}
           whileTap={{ scale: hasText && !disabled ? 0.95 : 1 }}
           className={cn(
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all duration-300",
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all duration-300 active:scale-90",
             hasText && !disabled
               ? "bg-gradient-to-r from-[#00f2fe] to-[#7000ff] text-black font-semibold shadow-[0_0_20px_rgba(0,242,254,0.2)] hover:opacity-90 active:scale-95"
               : "bg-white/5 text-gray-500/30",
