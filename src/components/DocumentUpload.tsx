@@ -66,7 +66,7 @@ export default function DocumentUpload({ onUploaded }: Props) {
           ? "border-purple-500/50 bg-purple-500/[0.03]"
           : result
             ? "border-emerald-500/30 bg-emerald-500/[0.02]"
-            : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]",
+            : "border-white/10 bg-white/[0.01] hover:border-[#7000ff]/30 hover:bg-white/[0.02]",
       )}
     >
       <input
@@ -148,9 +148,9 @@ export default function DocumentUpload({ onUploaded }: Props) {
           >
             <motion.div
               animate={dragging ? { y: -4, scale: 1.05 } : { y: 0, scale: 1 }}
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5"
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#00f2fe]/10 to-[#7000ff]/10 border border-white/5"
             >
-              <FileUp className="h-6 w-6 text-muted-foreground/40" />
+              <FileUp className="h-6 w-6 text-[#00f2fe]" />
             </motion.div>
             <div className="text-center">
               <p className="text-sm font-medium text-foreground/70">
