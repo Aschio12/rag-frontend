@@ -76,7 +76,7 @@ export const AssistantMessageSurface = React.memo(function AssistantMessageSurfa
         position: "relative",
         maxWidth: 760,
         width: "fit-content",
-        padding: "16px 20px",
+        padding: "14px 18px",
         marginTop: 4,
         marginBottom: 4,
         background: "var(--aether-glass-default)",
