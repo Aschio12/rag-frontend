@@ -313,3 +313,9 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* AETHER Shell — responsive helpers */
+@media (max-width: 768px) {
+  .aether-search-trigger { display: none !important; }
+  .aether-workspace-name span { max-width: 120px; }
+}

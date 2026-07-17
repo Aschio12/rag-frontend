@@ -82,7 +82,10 @@ export default function TopBar({
           <PanelLeft size={15} strokeWidth={1.6} />
         </IconButton>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div
+          className="aether-workspace-name"
+          style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}
+        >
           <BreadcrumbDot />
           <span
             style={{
@@ -91,12 +94,15 @@ export default function TopBar({
               color: "var(--aether-text-primary)",
               letterSpacing: "-0.01em",
               whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
             }}
           >
             {workspaceName}
           </span>
-          <ConnectionChip />
         </div>
+
+        <ConnectionChip />
 
         <div style={{ flex: 1 }} />
 
@@ -186,6 +192,7 @@ function SearchTrigger({ onClick }: { onClick?: () => void }) {
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
       transition={{ type: "spring", stiffness: 260, damping: 22 }}
+      className="aether-search-trigger"
       style={{
         display: "flex",
         alignItems: "center",
@@ -196,7 +203,8 @@ function SearchTrigger({ onClick }: { onClick?: () => void }) {
         padding: "7px 10px",
         borderRadius: 999,
         fontSize: 12.5,
-        minWidth: 200,
+        width: 220,
+        maxWidth: "40vw",
         cursor: "pointer",
         transition: "all 160ms ease",
       }}
