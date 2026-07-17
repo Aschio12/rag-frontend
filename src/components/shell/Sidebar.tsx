@@ -10,6 +10,7 @@
 import * as React from "react";
 import { motion, AnimatePresence, type LayoutGroup } from "framer-motion";
 import { useAetherSpring, useAetherMotion } from "@/design-system/motion";
+import { useBreakpoint } from "@/design-system/utils/useBreakpoint";
 import { Panel } from "./Panel";
 import { AetherGlyph } from "./AetherGlyph";
 import {
@@ -92,6 +93,9 @@ export default function Sidebar({
 }: SidebarProps) {
   const { reduced } = useAetherMotion();
   const spring = useAetherSpring("panel");
+  const bp = useBreakpoint();
+  const autoCollapse = bp === "sm" || bp === "md";
+  const effectiveCollapsed = autoCollapse ? false : collapsed;
 
   const grouped = React.useMemo(() => {
     const map: Record<string, NavItem[]> = { Workspace: [], Knowledge: [], Account: [] };
@@ -99,7 +103,7 @@ export default function Sidebar({
     return map;
   }, []);
 
-  const stateWidth = collapsed && !mobileOpen ? 72 : 270;
+  const stateWidth = effectiveCollapsed && !mobileOpen ? 72 : 270;
 
   return (
     <>
@@ -184,7 +188,7 @@ export default function Sidebar({
                 key={g}
                 label={g}
                 items={grouped[g]}
-                collapsed={collapsed}
+                collapsed={effectiveCollapsed}
                 activeView={activeView}
                 setActiveView={(id) => {
                   setActiveView(id);
@@ -193,7 +197,7 @@ export default function Sidebar({
               />
             ))}
 
-            {!collapsed && conversations && conversations.length > 0 && (
+            {!effectiveCollapsed && conversations && conversations.length > 0 && (
               <div style={{ marginTop: 4 }}>
                 <div
                   style={{
