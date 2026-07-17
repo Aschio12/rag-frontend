@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 
-import ChatMessage from "@/components/ChatMessage";
 import SourceViewer from "@/components/SourceViewer";
 import Header from "@/components/Header";
 import { useToast } from "@/components/Toast";
@@ -32,6 +31,12 @@ import Sidebar from "@/components/shell/Sidebar";
 import TopBar from "@/components/shell/TopBar";
 import Inspector from "@/components/shell/Inspector";
 import BottomDock from "@/components/shell/BottomDock";
+
+import {
+  ComposerMessage,
+  ColdOpen,
+} from "@/components/chat";
+import type { Source } from "@/lib/api";
 
 const suggestions = [
   "What documents do I have?",
@@ -452,6 +457,18 @@ export default function Home() {
     [handleSend],
   );
 
+  const openSourceForIndex = useCallback((idx: number) => {
+    const conv = conversations.find((c) => c.id === activeId);
+    const lastAssistant = conv?.messages.findLast?.((m) => m.role === "assistant");
+    const sources = (lastAssistant?.sources as Source[] | undefined) ?? [];
+    if (sources.length === 0) return;
+    setSourceViewerData(sources);
+    setSourceViewerOpen(true);
+    window.dispatchEvent(
+      new CustomEvent("open-source", { detail: { sources, index: idx } }),
+    );
+  }, [conversations, activeId]);
+
   const handlePinConversation = useCallback(
     (convId: string) => {
       updateConversation(convId, (c) => ({ ...c, pinned: !c.pinned }));
@@ -628,14 +645,24 @@ export default function Home() {
                     exit={{ opacity: 0 }}
                   >
                     {messages.length === 0 && !loading ? (
-                      <EmptyState
-                        onSuggest={(s) => handleSend(s)}
+                      <ColdOpen
+                        workspaceName="Aschalew"
                         suggestions={suggestions}
+                        onPick={(s) => handleSend(s)}
                       />
                     ) : (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                      <ul
+                        style={{
+                          listStyle: "none",
+                          margin: 0,
+                          padding: 0,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 18,
+                        }}
+                      >
                         {messages.map((m) => (
-                          <ChatMessage
+                          <ComposerMessage
                             key={m.id}
                             id={m.id}
                             role={m.role}
@@ -644,14 +671,12 @@ export default function Home() {
                             agentSteps={agentSteps[m.id]}
                             isStreaming={m.content === "" && loading}
                             bookmarked={m.bookmarked}
-                            rating={m.rating}
-                            onEdit={handleEditMessage}
-                            onDelete={handleDeleteMessage}
+                            onEdit={() => handleEditMessage(m.id, m.content)}
+                            onDelete={() => handleDeleteMessage(m.id)}
                             onRegenerate={handleRegenerate}
                             onCopy={handleCopyMessage}
-                            onBookmark={handleBookmarkMessage}
-                            onRate={handleRateMessage}
-                            onSpeak={handleSpeak}
+                            onPin={() => handleBookmarkMessage(m.id)}
+                            onOpenSource={openSourceForIndex}
                           />
                         ))}
                         {!loading && messages.length > 0 && (
@@ -662,7 +687,7 @@ export default function Home() {
                           />
                         )}
                         <div ref={bottomRef} />
-                      </div>
+                      </ul>
                     )}
                   </motion.div>
                 ) : (
@@ -703,89 +728,6 @@ export default function Home() {
         onClose={() => setSourceViewerOpen(false)}
       />
     </div>
-  );
-}
-
-function EmptyState({ onSuggest, suggestions }: { onSuggest: (s: string) => void; suggestions: string[] }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      style={{
-        minHeight: "60dvh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        textAlign: "center",
-        padding: "24px 12px",
-        gap: 20,
-      }}
-    >
-      <motion.span
-        animate={{ y: [0, -2, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          width: 56,
-          height: 56,
-          borderRadius: 18,
-          background: "var(--aether-surface-recessed)",
-          border: "1px solid var(--aether-border-subtle)",
-          display: "grid",
-          placeItems: "center",
-          boxShadow: "var(--aether-shadow-orb)",
-        }}
-      >
-        <Sparkles size={20} color="var(--aether-text-accent)" />
-      </motion.span>
-      <div>
-        <h1
-          style={{
-            fontSize: 32,
-            fontWeight: 500,
-            letterSpacing: "-0.03em",
-            marginBottom: 6,
-            color: "var(--aether-text-primary)",
-          }}
-        >
-          What would you like to know?
-        </h1>
-        <p
-          style={{
-            fontSize: 13.5,
-            color: "var(--aether-text-tertiary)",
-            letterSpacing: "-0.005em",
-          }}
-        >
-          Upload documents and ask questions to begin.
-        </p>
-      </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-        {suggestions.map((s) => (
-          <motion.button
-            key={s}
-            onClick={() => onSuggest(s)}
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 260, damping: 22 }}
-            style={{
-              padding: "8px 14px",
-              fontSize: 12,
-              border: "1px solid var(--aether-border-subtle)",
-              background: "var(--aether-glass-default)",
-              color: "var(--aether-text-secondary)",
-              borderRadius: 999,
-              cursor: "pointer",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-            }}
-          >
-            {s}
-          </motion.button>
-        ))}
-      </div>
-    </motion.div>
   );
 }
 
