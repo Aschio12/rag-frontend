@@ -55,18 +55,23 @@ export const AetherMarkdown = React.memo(function AetherMarkdown({
         rehypePlugins={[rehypeHighlight, rehypeKatex]}
         components={{
           code({ className, children, ...props }) {
+            const classNameStr = typeof className === "string" ? className : "";
             const isMermaid =
-              /language-mermaid/.test(className ?? "") ||
-              String(children ?? "").trim().startsWith(/(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram)/i);
+              classNameStr.includes("language-mermaid") ||
+              String(children ?? "")
+                .trim()
+                .toLowerCase()
+                .match(/^(graph|flowchart|sequencediagram|classdiagram|statediagram|erdiagram)\b/) != null;
+            const codeIsInline = props.node && (props as { node?: { position?: unknown } }).node == null;
+            const isStandaloneCode = /language-\w+/.test(classNameStr);
             if (isMermaid) {
               return <MermaidFrame code={String(children ?? "")} />;
             }
-            const isInline = !className || /language-/.test(className ?? "") === false;
-            if (isInline && !/language-/.test(className ?? "")) {
+            if (codeIsInline && !isStandaloneCode) {
               return <InlineCode {...props}>{children}</InlineCode>;
             }
             return (
-              <CodeBlock className={className} streaming={streaming}>
+              <CodeBlock className={classNameStr} streaming={streaming}>
                 {children}
               </CodeBlock>
             );
@@ -131,8 +136,10 @@ export const AetherMarkdown = React.memo(function AetherMarkdown({
               </ol>
             );
           },
-          li({ children, checked, ...rest }) {
-            const isTask = rest.node && (rest as { node?: { tagName?: string } }).node?.tagName === "li" && (rest as { node?: { properties?: { className?: string[] } } }).node?.properties?.className?.includes("task-list-item");
+          li({ children, ...rest }) {
+            const taskProps = rest as { node?: { properties?: { className?: string[] } } };
+            const isTask = !!taskProps.node?.properties?.className?.includes("task-list-item");
+            const checked = !!taskProps.node?.properties?.className?.includes("checked");
             if (isTask) {
               return (
                 <li
@@ -153,7 +160,6 @@ export const AetherMarkdown = React.memo(function AetherMarkdown({
                 </li>
               );
             }
-            const isOrderedItem = typeof children === "object" && children;
             return (
               <li
                 style={{
@@ -330,23 +336,28 @@ function Heading({
     2: { size: 18, weight: 500, tracking: "-0.02em", margin: "18px 0 10px" },
     3: { size: 15, weight: 500, tracking: "-0.01em", margin: "14px 0 8px" },
   }[level];
+  function RenderTag() {
+    if (level === 1) return <h1 style={tagStyle}>{children}</h1>;
+    if (level === 2) return <h2 style={tagStyle}>{children}</h2>;
+    return <h3 style={tagStyle}>{children}</h3>;
+  }
+  const tagStyle: React.CSSProperties = {
+    margin: 0,
+    fontSize: config.size,
+    fontWeight: config.weight,
+    letterSpacing: config.tracking,
+    color: "var(--aether-text-primary)",
+  };
   return (
-    <motion.h1
+    <motion.div
       initial={reduced ? false : { opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.26 }}
-      style={{
-        margin: config.margin,
-        fontSize: config.size,
-        fontWeight: config.weight,
-        letterSpacing: config.tracking,
-        color: "var(--aether-text-primary)",
-      }}
+      style={{ margin: config.margin }}
     >
-      {children}
-    </motion.h1>
-    // h1 default tag ok — node expects h1 specifically
-  ) as unknown as React.ReactElement;
+      <RenderTag />
+    </motion.div>
+  );
 }
 
 function BulletDot() {
