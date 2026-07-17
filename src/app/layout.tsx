@@ -7,13 +7,8 @@ import "./globals.css";
 import { ToastProvider } from "@/components/Toast";
 import { MotionConfig } from "framer-motion";
 import { AnimatedPageTransition } from "@/components/animations/AnimatedPageTransition";
-import dynamic from "next/dynamic";
 import { AetherThemeRoot } from "@/design-system/themes";
-
-const AmbientCanvas = dynamic(
-  () => import("@/design-system/effects/AmbientCanvas").then((m) => m.AmbientCanvas),
-  { ssr: false },
-);
+import { AmbientCanvasClient } from "@/design-system/effects/AmbientCanvasClient";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,7 +35,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-[var(--aether-surface-canvas)] text-[var(--aether-text-primary)] selection:bg-[var(--aether-text-accent)] selection:text-[var(--aether-text-on-accent)]">
         <AetherThemeRoot>
           <Suspense fallback={null}>
-            <AmbientCanvas />
+            <AmbientCanvasClient />
           </Suspense>
           <MotionConfig reducedMotion="user">
             <ToastProvider>
