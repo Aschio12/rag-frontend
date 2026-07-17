@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAetherMotion } from "@/design-system/motion";
 
 interface UserMessageChipProps {
@@ -120,5 +120,3 @@ const ActionChip = React.memo(function ActionChip({
     </button>
   );
 });
-
-import { AnimatePresence } from "framer-motion";
