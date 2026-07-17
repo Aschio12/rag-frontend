@@ -223,7 +223,11 @@ function SearchTrigger({ onClick }: { onClick?: () => void }) {
   );
 }
 
-interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface IconButtonProps
+  extends Omit<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    "onAnimationStart" | "onAnimationEnd" | "onDragStart" | "onDragEnd" | "onDrag"
+  > {
   label: string;
   children: React.ReactNode;
 }

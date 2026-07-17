@@ -62,7 +62,16 @@ interface SidebarProps {
   activeId?: string | null;
   onSelectConversation?: (id: string) => void;
   onNewChat?: () => void;
+  onDeleteConversation?: (id: string) => void;
+  onPinConversation?: (id: string) => void;
+  onArchiveConversation?: (id: string) => void;
+  onAutoRename?: (id: string) => void;
   folders?: Folder[];
+  onCreateFolder?: (name: string) => void;
+  onDeleteFolder?: (folderId: string) => void;
+  onMoveToFolder?: (convId: string, folderId: string | undefined) => void;
+  onAddTag?: (convId: string, tag: string) => void;
+  onRemoveTag?: (convId: string, tag: string) => void;
   mobileOpen?: boolean;
   onCloseMobile?: () => void;
 }

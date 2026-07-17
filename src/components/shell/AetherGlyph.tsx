@@ -22,10 +22,7 @@ export const AetherGlyph = React.memo(function AetherGlyph({
   title = "Aether",
   className,
   ...rest
-}: React.PropsWithRef<Props>) {
-  const ref = React.useRef<SVGSVGElement>(null);
-  React.useImperativeHandle(rest.ref as React.Ref<SVGSVGElement>, () => ref.current as SVGSVGElement);
-
+}: Props) {
   const r = 9;
   const cx = 12;
   const cy = 12;
@@ -34,7 +31,6 @@ export const AetherGlyph = React.memo(function AetherGlyph({
 
   return (
     <svg
-      ref={ref}
       width={size}
       height={size}
       viewBox="0 0 24 24"
@@ -51,7 +47,14 @@ export const AetherGlyph = React.memo(function AetherGlyph({
         </radialGradient>
       </defs>
       <circle cx={cx} cy={cy} r={r + 2} fill="url(#aether-glyph-core)" />
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--aether-border-default)" strokeWidth={1.2} />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill="none"
+        stroke="var(--aether-border-default)"
+        strokeWidth={1.2}
+      />
       <circle
         cx={cx}
         cy={cy}
