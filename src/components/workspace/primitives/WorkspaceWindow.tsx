@@ -157,7 +157,7 @@ export const WorkspaceWindow = React.memo(function WorkspaceWindow({
                         fontSize: 10.5,
                         color: "var(--aether-text-tertiary)",
                         letterSpacing: "0.04em",
-                        whiteOverflow: "ellipsis",
+                        textOverflow: "ellipsis",
                         overflow: "hidden",
                         whiteSpace: "nowrap",
                       }}
