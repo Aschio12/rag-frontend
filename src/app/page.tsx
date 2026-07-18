@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
@@ -36,6 +37,7 @@ import {
   ComposerMessage,
   ColdOpen,
 } from "@/components/chat";
+import { CoreController, useCoreEmitter, useStreamingController } from "@/components/aether";
 import type { Source } from "@/lib/api";
 
 const suggestions = [
@@ -612,6 +614,16 @@ export default function Home() {
             position: "relative",
           }}
         >
+          <CoreBridge
+            streaming={loading}
+            typing={
+              activeConversation
+                ? activeConversation.messages
+                    .filter((m) => m.role === "user")
+                    .slice(-1)[0]?.content.length ?? 0
+                : 0
+            }
+          />
           {/* hidden original Header — kept as no-op for compatibility */}
           <Header
             sidebarCollapsed={sidebarCollapsed}
@@ -740,8 +752,7 @@ function PlaceholderView({ name }: { name: string }) {
         minHeight: "60dvh",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
+        alignItems: "center",        justifyContent: "center",
         gap: 12,
         color: "var(--aether-text-tertiary)",
       }}
@@ -761,5 +772,56 @@ function PlaceholderView({ name }: { name: string }) {
       </span>
       <p style={{ fontSize: 13 }}>{name.slice(0, 1).toUpperCase() + name.slice(1)} — coming soon</p>
     </motion.div>
+  );
+}
+
+/**
+ * CoreBridge — mounts the Living AI Core behind the conversation and pipes
+ * page-level state events to its state machine. Pure side effects; renders
+ * nothing visible when the core is mounted (the orb lives absolute-positioned).
+ */
+function CoreBridge({ streaming, typing }: { streaming: boolean; typing: number }) {
+  const emit = useCoreEmitter();
+  const stream = useStreamingController();
+  const lastEvent = React.useRef<string>("");
+  // Smooth typing indicator: emit "TYPING_START" only on first non-zero,
+  // "TYPING_STOP" only when typing hits 0.
+  const wasTyping = React.useRef(false);
+  const wasStreaming = React.useRef(false);
+
+  React.useEffect(() => {
+    const cur = typing > 0;
+    if (cur !== wasTyping.current) {
+      wasTyping.current = cur;
+      emit(cur ? "TYPING_START" : "TYPING_STOP");
+    }
+  }, [typing, emit]);
+
+  React.useEffect(() => {
+    if (streaming && !wasStreaming.current) {
+      wasStreaming.current = true;
+      stream.start();
+      emit("STREAM_START");
+      lastEvent.current = "STREAM_START";
+    } else if (!streaming && wasStreaming.current) {
+      wasStreaming.current = false;
+      stream.stop();
+      emit("STREAM_END");
+    }
+  }, [streaming, emit, stream]);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: "none",
+        contain: "strict",
+      }}
+      aria-hidden
+    >
+      <CoreController active />
+    </div>
   );
 }
