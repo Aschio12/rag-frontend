@@ -10,6 +10,7 @@
 
 import * as React from "react";
 import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 import { AetherCoreMaterial } from "./CoreMaterial";
 import type { CoreVital } from "./state-machine";
 
@@ -44,5 +45,3 @@ export const CoreMesh = React.memo(function CoreMesh({ vital, lowPower }: CoreMe
     </mesh>
   );
 });
-
-import * as THREE from "three";
