@@ -23,12 +23,16 @@ import {
 } from "lucide-react";
 import { useAetherMotion } from "@/design-system/motion";
 import { buildSampleMindMap, type MindBranch } from "./mindmap-model";
+import { generateMindMap } from "@/lib/api";
+import { selectionStore } from "@/lib/selection-store";
 
 const ROTATION_SECONDS = 80;
 
 export const MindMapPanel = React.memo(function MindMapPanel() {
   const { reduced } = useAetherMotion();
-  const data = React.useMemo(() => buildSampleMindMap(), []);
+  const sample = React.useRef(buildSampleMindMap());
+  const [data, setData] = React.useState(sample.current);
+  const [loading, setLoading] = React.useState(false);
   const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set());
   const [zoom, setZoom] = React.useState(1);
   const [pan, setPan] = React.useState({ x: 0, y: 0 });
@@ -36,6 +40,58 @@ export const MindMapPanel = React.memo(function MindMapPanel() {
 
   const draggingRef = React.useRef<{ startX: number; startY: number; ox: number; oy: number } | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Live: load real mind map when a document is selected.
+  React.useEffect(() => {
+    let cancelled = false;
+    const docId = selectionStore.get();
+    if (!docId) {
+      setData(sample.current);
+      return;
+    }
+    setLoading(true);
+    void (async () => {
+      try {
+        const raw = (await generateMindMap(docId)) as {
+          central?: string;
+          branches: Array<{
+            id?: string;
+            name: string;
+            note?: string;
+            children?: Array<{ id?: string; name: string; note?: string }>;
+          }>;
+        };
+        if (cancelled) return;
+        const branches = (raw.branches ?? []).map((b, i) => ({
+          id: b.id || `live-${docId}-${i}`,
+          name: b.name,
+          note: b.note,
+          children: b.children?.map((c, j) => ({
+            id: c.id || `live-${docId}-${i}-${j}`,
+            name: c.name,
+            note: c.note,
+          })),
+        }));
+        setData({
+          central: raw.central || sample.current.central,
+          branches,
+        });
+      } catch {
+        if (cancelled) return;
+        setData(sample.current);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    const id = selectionStore.subscribe(() => {
+      const next = selectionStore.get();
+      if (!next) setData(sample.current);
+    });
+    return () => {
+      cancelled = true;
+      id();
+    };
+  }, []);
 
   const toggleCollapse = (id: string) => {
     setCollapsed((prev) => {
