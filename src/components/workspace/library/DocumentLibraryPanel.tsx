@@ -40,6 +40,7 @@ import type { AppDocument } from "./document-model-types";
 import { useAetherMotion } from "@/design-system/motion";
 import { useToast } from "@/components/Toast";
 import { useDocsFeed, type DocRecord } from "@/lib/docs-feed";
+import { selectionStore } from "@/lib/selection-store";
 
 const ALL_TYPES: DocType[] = ["pdf", "md", "html", "txt"];
 const COLUMNS_BREAKPOINTS = [
@@ -391,9 +392,11 @@ export const DocumentLibraryPanel = React.memo(function DocumentLibraryPanel() {
                 selected={selected.has(d.id)}
                 onSelect={toggleSelection}
                 onOpen={(id) => {
-                  showToast(`Opened ${id}`, "info");
+                  selectionStore.set(id);
+                  showToast(`Selected ${id}`, "info");
                 }}
                 onExplore={(id) => {
+                  selectionStore.set(id);
                   showToast(`Exploring ${id}`, "info");
                 }}
               />
