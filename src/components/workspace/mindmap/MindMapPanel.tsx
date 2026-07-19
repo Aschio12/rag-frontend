@@ -24,7 +24,7 @@ import {
 import { useAetherMotion } from "@/design-system/motion";
 import { buildSampleMindMap, type MindBranch } from "./mindmap-model";
 import { generateMindMap } from "@/lib/api";
-import { selectionStore } from "@/lib/selection-store";
+import { selectionStore, useFocusedChunk } from "@/lib/selection-store";
 
 const ROTATION_SECONDS = 80;
 
@@ -37,6 +37,18 @@ export const MindMapPanel = React.memo(function MindMapPanel() {
   const [zoom, setZoom] = React.useState(1);
   const [pan, setPan] = React.useState({ x: 0, y: 0 });
   const [focusedId, setFocusedId] = React.useState<string | null>(null);
+  const chunk = useFocusedChunk();
+
+  // Bridge: when a chunk is focused (from Inspector), highlight the corresponding branch.
+  const chunkFocusedId = React.useMemo(() => {
+    if (chunk === null) return null;
+    if (!data.branches.length) return null;
+    return data.branches[chunk % data.branches.length]?.id ?? null;
+  }, [chunk, data.branches]);
+
+  React.useEffect(() => {
+    if (chunkFocusedId) setFocusedId(chunkFocusedId);
+  }, [chunkFocusedId]);
 
   const draggingRef = React.useRef<{ startX: number; startY: number; ox: number; oy: number } | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);

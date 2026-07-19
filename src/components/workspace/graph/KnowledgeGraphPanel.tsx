@@ -41,10 +41,7 @@ import {
 } from "./graph-model";
 import { radialLayout } from "./radialLayout";
 import { extractKnowledgeGraph } from "@/lib/api";
-import {
-  useSelectedDocument,
-  useFocusedChunk,
-} from "@/lib/selection-store";
+import { useSelectedDocument } from "@/lib/selection-store";
 
 
 interface Props {
@@ -67,7 +64,6 @@ export const KnowledgeGraphPanel = React.memo(function KnowledgeGraphPanel({
 function KnowledgeGraphInner(_: { docId?: string }) {
   const sample = React.useRef<ConceptGraph>(buildSampleGraph());
   const docId = useSelectedDocument();
-  const chunk = useFocusedChunk();
 
   const [graph, setGraph] = React.useState<ConceptGraph>(() => sample.current);
   const [loading, setLoading] = React.useState(false);
@@ -119,18 +115,6 @@ function KnowledgeGraphInner(_: { docId?: string }) {
     // feed reference exists but is unused; intentional — keeps the file hot
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [docId]);
-
-  // Focus the node carrying focused-chunk hint if the inspector flagged it.
-  const chunkMatchedId = React.useMemo(() => {
-    if (chunk === null) return null;
-    if (!graph.nodes.length) return null;
-    return graph.nodes[chunk % graph.nodes.length]?.id ?? null;
-  }, [chunk, graph.nodes]);
-
-  React.useEffect(() => {
-    if (chunkMatchedId) setFocusedId(chunkMatchedId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chunkMatchedId]);
 
   const [query, setQuery] = React.useState("");
   const [activeKinds, setActiveKinds] = React.useState<Set<ConceptKind>>(
