@@ -20,8 +20,9 @@ import {
   ArrowDown,
 } from "lucide-react";
 import { useAetherMotion } from "@/design-system/motion";
-import { buildActions, type ActionDef, type Dispatcher } from "./actions";
-import type { ActionGroup } from "./actions-model";
+import { buildActions } from "./actions";
+import type { ActionDef, Dispatcher } from "./actions";
+import type { ActionGroup, DispatchedAction } from "./actions-model";
 
 interface CommandPaletteProps {
   open: boolean;
@@ -191,7 +192,7 @@ export const CommandPalette = React.memo(function CommandPalette({
                           value={a.label + " " + (a.keywords ?? []).join(" ")}
                           key={a.id}
                           onSelect={() => {
-                            void a.run({ dispatchAction: (k) => dispatch(k as never) });
+                            void a.run({ dispatchAction: (k: DispatchedAction) => dispatch(k) });
                             onClose();
                           }}
                           style={{

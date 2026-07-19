@@ -14,7 +14,7 @@ export type ActionGroup =
   | "Quick";
 
 export type ActionContext = {
-  dispatchAction: (kind: string, payload?: unknown) => void;
+  dispatchAction: (action: DispatchedAction) => void;
 };
 
 export interface ActionDef {

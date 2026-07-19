@@ -38,6 +38,18 @@ import {
   ColdOpen,
 } from "@/components/chat";
 import { CoreController, useCoreEmitter, useStreamingController } from "@/components/aether";
+import {
+  WorkspaceProvider,
+  useWorkspace,
+} from "@/components/workspace/primitives/useWorkspaceStore";
+import type { WorkspaceWindowKind } from "@/components/workspace/primitives/useWorkspaceStore";
+import {
+  WorkspaceBridgeProvider,
+} from "@/components/workspace/primitives/WorkspaceBridge";
+import { CommandPalette } from "@/components/workspace/command/CommandPalette";
+import { InspectorV2 } from "@/components/workspace/inspector/InspectorV2";
+import type { DispatchedAction } from "@/components/workspace/command/actions-model";
+import { useAetherTheme } from "@/design-system/themes";
 import type { Source } from "@/lib/api";
 
 const suggestions = [
@@ -53,7 +65,11 @@ const followUpSuggestions = [
   "Explain in simpler terms",
 ];
 
-export default function Home() {
+function AppShell() {
+  return <HomeInner />;
+}
+
+function HomeInner() {
   const { showToast } = useToast();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -824,4 +840,109 @@ function CoreBridge({ streaming, typing }: { streaming: boolean; typing: number 
       <CoreController active />
     </div>
   );
+}
+
+export default function HomeWrapped() {
+  const { toggle, theme } = useAetherTheme();
+  const [paletteOpen, setPaletteOpen] = React.useState(false);
+  const [inspectorOpen, setInspectorOpen] = React.useState(false);
+  const [inspectorSection, setInspectorSection] =
+    React.useState<"sources" | "memory" | "context" | "files">("sources");
+
+  // Global ⌘K / shortcuts
+  React.useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+      if (e.key === "Escape") {
+        setPaletteOpen(false);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "/") {
+        e.preventDefault();
+        setInspectorOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const dispatch = React.useCallback((action: DispatchedAction) => {
+    if (action.kind === "theme.toggle") {
+      toggle();
+      return;
+    }
+    if (action.kind === "workspace.open") {
+      const title = action.payload?.title;
+      // Lazy-import workspaces via a sentinel event so AppShell can react.
+      window.dispatchEvent(
+        new CustomEvent("aether:workspace:open", {
+          detail: { kind: action.payload.kind, title },
+        }),
+      );
+      return;
+    }
+    if (action.kind === "workspace.close-all") {
+      window.dispatchEvent(new CustomEvent("aether:workspace:close-all"));
+      return;
+    }
+    if (action.kind === "workspace.focus") {
+      setInspectorOpen(true);
+      setInspectorSection(action.payload.section);
+      return;
+    }
+    if (action.kind === "documents.clear-filter") {
+      window.dispatchEvent(new CustomEvent("aether:documents:clear-filter"));
+    }
+  }, [toggle]);
+
+  return (
+    <WorkspaceProvider>
+      <WorkspaceBridgeProvider value={{ dispatch }}>
+        <AppShellBridge onPaletteOpen={() => setPaletteOpen(true)} />
+        <AppShell />
+        <InspectorV2
+          open={inspectorOpen}
+          onClose={() => setInspectorOpen(false)}
+          defaultTab={inspectorSection}
+        />
+        <CommandPalette
+          open={paletteOpen}
+          onClose={() => setPaletteOpen(false)}
+          dispatch={dispatch}
+        />
+        <noscript data-theme={theme} />
+      </WorkspaceBridgeProvider>
+    </WorkspaceProvider>
+  );
+}
+
+/**
+ * AppShellBridge — listens for workspace commands emitted from the Palette
+ * (open kind X, close all) and bubbles them up to the in-page workspace
+ * store via a ref-tracked effect. Keeps the page tree inert for the writer.
+ */
+function AppShellBridge({ onPaletteOpen }: { onPaletteOpen: () => void }) {
+  const workspace = useWorkspace();
+  React.useEffect(() => {
+    const open = (e: Event) => {
+      const detail = (e as CustomEvent).detail as {
+        kind: WorkspaceWindowKind;
+        title?: string;
+      };
+      workspace.open(detail.kind, { title: detail.title ?? detail.kind });
+    };
+    const closeAll = () => workspace.dispatch({ type: "CLOSE_ALL" });
+    const openPalette = () => onPaletteOpen();
+    window.addEventListener("aether:workspace:open", open);
+    window.addEventListener("aether:workspace:close-all", closeAll);
+    window.addEventListener("aether:palette:open", openPalette);
+    return () => {
+      window.removeEventListener("aether:workspace:open", open);
+      window.removeEventListener("aether:workspace:close-all", closeAll);
+      window.removeEventListener("aether:palette:open", openPalette);
+    };
+  }, [workspace, onPaletteOpen]);
+  return null;
 }

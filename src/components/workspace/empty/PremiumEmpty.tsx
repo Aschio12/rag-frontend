@@ -45,6 +45,7 @@ export const PremiumEmpty = React.memo(function PremiumEmpty({
       }}
     >
       <EmptyShape shape={shape} compact={compact} />
+      ...
       <p
         style={{
           fontSize: compact ? 12.5 : 14,
@@ -95,6 +96,7 @@ export const PremiumEmpty = React.memo(function PremiumEmpty({
 });
 
 function EmptyShape({ shape, compact }: { shape: PremiumEmptyProps["shape"]; compact: boolean }) {
+  const resolved: Required<PremiumEmptyProps>["shape"] = shape ?? "shelves";
   const size = compact ? 84 : 120;
   return (
     <motion.div
@@ -114,7 +116,7 @@ function EmptyShape({ shape, compact }: { shape: PremiumEmptyProps["shape"]; com
         border: "1px solid var(--aether-border-subtle)",
       }}
     >
-      <Shape svg={shapeShape(shape)} />
+      <Shape svg={shapeShape((shape ?? "shelves") as NonNullable<PremiumEmptyProps["shape"]>)} />
       <LiteStar top={4} left={4} />
       <LiteStar bottom={4} right={4} color="#A48BFF" />
     </motion.div>
@@ -169,7 +171,7 @@ function Shape({ svg }: { svg: React.ReactNode }) {
 /* Each "shape" is a hand-drawn CSS / SVG illustration appropriate to the
    empty state. No emojis, no stock images, no third-party assets. */
 
-function shapeShape(shape: NonNullable<PremiumEmptyProps["shape"]>) {
+function shapeShape(shape: Required<PremiumEmptyProps>["shape"]) {
   switch (shape) {
     case "shelves":
       return <ShelvesSvg />;

@@ -63,55 +63,64 @@ function nextId(prefix: string): string {
 
 export function buildSampleTimeline(): TimelineRun {
   counter = 0;
-  const read = step("read", "Reading the question");
-  const plan = {
+  const read: TimelinePhase = {
+    id: nextId("read"),
+    label: "Read",
+    description: "Read the question",
+    tone: PHASE_TONE.read ?? "iris",
+    status: "complete",
+    duration: 0.32,
+    confidence: 0.9,
+    steps: [],
+  };
+  const plan: TimelinePhase = {
     id: nextId("plan"),
     label: "Plan",
     description: "Decomposing intent",
     tone: PHASE_TONE.plan,
-    status: "complete" as const,
+    status: "complete",
     duration: 0.42,
     confidence: 0.92,
     steps: [
-      step("plan-decompose", "Decompose into sub-goals"),
-      step("plan-decide", "Decide retrieval strategy"),
+      { id: nextId("plan-decompose"), label: "Decompose into sub-goals", status: "complete", duration: 0.2 },
+      { id: nextId("plan-decide"), label: "Decide retrieval strategy", status: "complete", duration: 0.22 },
     ],
   };
-  const search = {
+  const search: TimelinePhase = {
     id: nextId("search"),
     label: "Search",
     description: "Iterative retrieval",
     tone: PHASE_TONE.search,
-    status: "complete" as const,
+    status: "complete",
     duration: 1.18,
     confidence: 0.86,
     steps: [
-      step("search-1", "vector hit · 6 candidates"),
-      step("search-2", "BM25 expansion · 4 candidates"),
-      step("search-3", "rerank · top 5"),
+      { id: nextId("search-1"), label: "vector hit · 6 candidates", status: "complete", duration: 0.4 },
+      { id: nextId("search-2"), label: "BM25 expansion · 4 candidates", status: "complete", duration: 0.38 },
+      { id: nextId("search-3"), label: "rerank · top 5", status: "complete", duration: 0.4 },
     ],
   };
-  const verify = {
+  const verify: TimelinePhase = {
     id: nextId("verify"),
     label: "Verify",
     description: "Claim conflict check",
     tone: PHASE_TONE.verify,
-    status: "running" as const,
+    status: "running",
     duration: 0.6,
     confidence: 0.7,
     steps: [
-      step("verify-1", "claims: 12"),
-      step("verify-2", "supporting: 9"),
-      step("verify-3", "conflicts: 1"),
-      step("verify-4", "out of scope: 2", "pending"),
+      { id: nextId("verify-1"), label: "claims: 12", status: "complete", duration: 0.16 },
+      { id: nextId("verify-2"), label: "supporting: 9", status: "complete", duration: 0.18 },
+      { id: nextId("verify-3"), label: "conflicts: 1", status: "running", duration: 0.18 },
+      { id: nextId("verify-4"), label: "out of scope: 2", status: "pending" },
     ],
   };
-  const compose = {
+  const compose: TimelinePhase = {
     id: nextId("compose"),
     label: "Compose",
     description: "Form final answer",
     tone: PHASE_TONE.compose,
-    status: "pending" as const,
+    status: "pending",
     duration: 0,
     confidence: undefined,
     steps: [],
@@ -133,15 +142,11 @@ export function buildSampleTimeline(): TimelineRun {
   };
 }
 
-function step(prefix: string, label: string, statusOverride?: TimelineStep["status"]): TimelinePhase {
+function step(prefix: string, label: string): TimelineStep {
   return {
     id: nextId(prefix),
-    label: label,
-    description: undefined,
-    tone: PHASE_TONE.read ?? "iris",
-    status: statusOverride ?? "complete",
-    duration: statusOverride === "pending" ? undefined : 0.32,
-    confidence: statusOverride === "pending" ? undefined : 0.9,
-    steps: [],
+    label,
+    status: "complete",
+    duration: 0.32,
   };
 }
