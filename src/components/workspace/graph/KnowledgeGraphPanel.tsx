@@ -45,7 +45,7 @@ import {
   useSelectedDocument,
   useFocusedChunk,
 } from "@/lib/selection-store";
-import { useDocsFeed } from "@/lib/docs-feed";
+
 
 interface Props {
   docId?: string;
@@ -68,7 +68,7 @@ function KnowledgeGraphInner(_: { docId?: string }) {
   const sample = React.useRef<ConceptGraph>(buildSampleGraph());
   const docId = useSelectedDocument();
   const chunk = useFocusedChunk();
-  const feed = useDocsFeed();
+
   const [graph, setGraph] = React.useState<ConceptGraph>(() => sample.current);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -131,8 +131,6 @@ function KnowledgeGraphInner(_: { docId?: string }) {
     if (chunkMatchedId) setFocusedId(chunkMatchedId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chunkMatchedId]);
-
-  void feed;
 
   const [query, setQuery] = React.useState("");
   const [activeKinds, setActiveKinds] = React.useState<Set<ConceptKind>>(

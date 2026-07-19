@@ -27,23 +27,8 @@ export function useStreamingController(opts: StreamingControllerOptions = {}) {
   const { reduced } = useAetherMotion();
   const tokensRef = React.useRef(0);
   const lastAtRef = React.useRef(0);
-  const lastPulseAt = React.useRef(0);
   const ewmaRef = React.useRef(0);
   const startedRef = React.useRef(false);
-
-  // idle pulse: periodic tiny pulse so the core feels alive without input
-  React.useEffect(() => {
-    if (startedRef.current) return;
-    const id = window.setInterval(() => {
-      if (startedRef.current) return;
-      const now = performance.now();
-      const gap = now - lastPulseAt.current;
-      if (gap < 4500) return;
-      lastPulseAt.current = now;
-      patch({ pulse: reduced ? 0 : 0.05 + Math.random() * 0.04 });
-    }, 1100);
-    return () => window.clearInterval(id);
-  }, [patch, reduced]);
 
   return {
     start() {

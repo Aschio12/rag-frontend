@@ -7,7 +7,6 @@
  */
 
 import {
-  type ActionContext,
   type ActionDef,
   type DispatchedAction,
   type Dispatcher,
@@ -16,8 +15,6 @@ import {
 export type { ActionDef, Dispatcher, DispatchedAction };
 
 export function buildActions(dispatch: Dispatcher): ActionDef[] {
-  const ctx: ActionContext = { dispatchAction: (a) => dispatch(a as never) };
-  void ctx;
   const a: ActionDef[] = [
     {
       id: "ws.library",
