@@ -35,10 +35,10 @@ import { ImportHistory } from "./ImportHistory";
 import { LazyCard } from "./LazyCard";
 import { FilterChipStrip, type FilterChip } from "./FilterChipStrip";
 
-import { AppDocument, DocType, buildSampleLibrary } from "./document-model";
+import { AppDocument, DocType } from "./document-model";
 import { useAetherMotion } from "@/design-system/motion";
-import { useAetherTheme } from "@/design-system/themes";
 import { useToast } from "@/components/Toast";
+import { useDocsFeed, type DocRecord } from "@/lib/docs-feed";
 
 const ALL_TYPES: DocType[] = ["pdf", "md", "html", "txt"];
 const COLUMNS_BREAKPOINTS = [
@@ -70,26 +70,48 @@ function useColumnCount(): number {
 const initialTickets: UploadTicket[] = [];
 
 export const DocumentLibraryPanel = React.memo(function DocumentLibraryPanel() {
-  const { reduced } = useAetherMotion();
-  const { toggle: _toggle } = useAetherTheme(); // keep import alive for future use
-  void _toggle;
   const { showToast } = useToast();
-  const [docs, setDocs] = React.useState<AppDocument[]>(() => buildSampleLibrary());
+  const feed = useDocsFeed();
   const [query, setQuery] = React.useState("");
   const [filterId, setFilterId] = React.useState<string>("all");
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const [dragActive, setDragActive] = React.useState(false);
-  const [tickets, setTickets] = React.useState<UploadTicket[]>(initialTickets);
+  const [tickets, setTickets] = React.useState<UploadTicket[]>([]);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [pendingTickets, setPendingTickets] = React.useState<UploadTicket[]>([]);
-  const fmtSize = 240; // estimate row height px for virtual list (card aspect 4:5 + meta)
   const cardH = 280;
   const cols = useColumnCount();
 
+  // Adapt feed records → AppDocument so the rest of the panel stays untouched.
+  const docsWithAdapter = React.useMemo<AppDocument[]>(() =>
+    feed.docs.map<AppDocument>((d) => ({
+      id: d.id,
+      filename: d.filename,
+      type: d.type,
+      status:
+        d.status === "indexing"
+          ? "indexing"
+          : d.status === "queued"
+          ? "queued"
+          : d.status === "error"
+          ? "error"
+          : "indexed",
+      chunkCount: d.chunkCount,
+      sizeBytes: d.sizeBytes,
+      uploadedAt: d.uploadedAt,
+      indexedAt: d.indexedAt,
+      embeddingProgress: d.status === "indexed" ? 1 : 0.5,
+      tokenCount: 0,
+      tags: [d.type],
+      pinned: false,
+      snippet: d.snippet,
+    })),
+  [feed.docs]);
+
   const filterChips: FilterChip[] = React.useMemo(() => {
-    const counts: Record<string, number> = { all: docs.length, pdf: 0, md: 0, html: 0, txt: 0, recent: 0, indexed: 0 };
-    const now = Date.UTC(2026, 0, 14);
-    for (const d of docs) {
+    const counts: Record<string, number> = { all: docsWithAdapter.length, pdf: 0, md: 0, html: 0, txt: 0, recent: 0, indexed: 0 };
+    const now = Date.now();
+    for (const d of docsWithAdapter) {
       counts[d.type] = (counts[d.type] ?? 0) + 1;
       if (now - new Date(d.uploadedAt).getTime() <= 7 * 24 * 60 * 60 * 1000) {
         counts.recent += 1;
@@ -105,13 +127,13 @@ export const DocumentLibraryPanel = React.memo(function DocumentLibraryPanel() {
       { id: "recent",  label: "Recent",  count: counts.recent },
       { id: "indexed", label: "Indexed", count: counts.indexed },
     ];
-  }, [docs]);
+  }, [docsWithAdapter]);
 
   const filtered = React.useMemo(() => {
     const q = query.toLowerCase().trim();
-    return docs.filter((d) => {
+    return docsWithAdapter.filter((d) => {
       if (filterId === "recent") {
-        const days = Math.max(0, Date.UTC(2026, 0, 14) - new Date(d.uploadedAt).getTime()) / 86400000;
+        const days = Math.max(0, Date.now() - new Date(d.uploadedAt).getTime()) / 86400000;
         if (days > 7) return false;
       } else if (filterId === "indexed") {
         if (d.status !== "indexed") return false;
@@ -126,7 +148,7 @@ export const DocumentLibraryPanel = React.memo(function DocumentLibraryPanel() {
       }
       return true;
     });
-  }, [docs, query, filterId]);
+  }, [docsWithAdapter, query, filterId]);
 
   const toggleSelection = React.useCallback((id: string, next: boolean) => {
     setSelected((prev) => {
@@ -149,37 +171,45 @@ export const DocumentLibraryPanel = React.memo(function DocumentLibraryPanel() {
       setPendingTickets(newTickets);
       setTickets((prev) => [...newTickets, ...prev]);
       setPreviewOpen(true);
-      // simulate progress
-      newTickets.forEach((t) => {
+
+      // Per-file upload: drive each ticket off the real backend upload.
+      newTickets.forEach((t, i) => {
+        const file = files[i];
+        if (!file) return;
         let prog = 0;
-        const id = setInterval(() => {
-          prog = Math.min(1, prog + 0.18 + Math.random() * 0.08);
+        const iv = window.setInterval(() => {
+          prog = Math.min(0.92, prog + 0.18 + Math.random() * 0.06);
           setTickets((prev) =>
             prev.map((p) =>
               p.id === t.id
-                ? {
-                    ...p,
-                    progress: prog,
-                    status: prog >= 1 ? "indexing" : "uploading",
-                  }
+                ? { ...p, progress: prog, status: prog >= 0.92 ? "indexing" : "uploading" }
                 : p,
             ),
           );
-          if (prog >= 1) {
-            clearInterval(id);
-            const id2 = setTimeout(() => {
-              setTickets((prev) =>
-                prev.map((p) =>
-                  p.id === t.id ? { ...p, status: "done" } : p,
-                ),
-              );
-            }, 700);
-            // cleanup
-            return () => clearTimeout(id2);
-          }
         }, 220);
+        void feed
+          .uploadFile(file)
+          .then(() => {
+            clearInterval(iv);
+            setTickets((prev) =>
+              prev.map((p) =>
+                p.id === t.id ? { ...p, progress: 1, status: "done" } : p,
+              ),
+            );
+          })
+          .catch(() => {
+            clearInterval(iv);
+            setTickets((prev) =>
+              prev.map((p) =>
+                p.id === t.id ? { ...p, status: "error", progress: 1 } : p,
+              ),
+            );
+            showToast(`Could not upload ${file.name}`, "error");
+          });
       });
     },
+    // feed is stable so listing it is unnecessary
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
@@ -188,30 +218,20 @@ export const DocumentLibraryPanel = React.memo(function DocumentLibraryPanel() {
       setPreviewOpen(false);
       return;
     }
-    const created: AppDocument[] = pendingTickets.map((t) => ({
-      id: `doc-${t.id}`,
-      filename: t.name,
-      type:
-        t.name.endsWith(".pdf")
-          ? "pdf"
-          : t.name.endsWith(".md")
-          ? "md"
-          : t.name.endsWith(".html") || t.name.endsWith(".htm")
-          ? "html"
-          : "txt",
-      status: "indexing",
-      chunkCount: 0,
-      sizeBytes: t.sizeBytes,
-      uploadedAt: new Date().toISOString(),
-      tokenCount: 0,
-      snippet: "Recently imported — processing…",
-      tags: [],
-    }));
-    setDocs((prev) => [...created, ...prev]);
-    setPendingTickets([]);
+    // Trigger the real upload for each pending file — backend already has rows
+    // from feed.uploadFile(). We mirror the result in the queue UI.
+    setPendingTickets((pending) => {
+      pending.forEach((t) => {
+        setTickets((prev) =>
+          prev.map((p) => (p.id === t.id ? { ...p, status: "uploading" } : p)),
+        );
+      });
+      return [];
+    });
+    void feed.refresh();
+    showToast("Upload queued", "success");
     setPreviewOpen(false);
-    showToast(`Committed ${created.length} document${created.length !== 1 ? "s" : ""}`, "success");
-  }, [pendingTickets, showToast]);
+  }, [pendingTickets, showToast, feed]);
 
   const handleDiscard = React.useCallback(() => {
     if (pendingTickets.length === 0) {
@@ -226,13 +246,20 @@ export const DocumentLibraryPanel = React.memo(function DocumentLibraryPanel() {
 
   const handleBulk = React.useCallback(
     (id: string) => {
-      showToast(`${id.toUpperCase()} applied to ${selected.size} document${selected.size !== 1 ? "s" : ""}`, "success");
+      showToast(
+        `${id.toUpperCase()} applied to ${selected.size} document${selected.size !== 1 ? "s" : ""}`,
+        "success",
+      );
       if (id === "delete") {
-        setDocs((prev) => prev.filter((d) => !selected.has(d.id)));
+        // Real deletion against the backend.
+        const ids = Array.from(selected);
+        ids.forEach((docId) => {
+          void feed.removeLocal(docId);
+        });
         setSelected(new Set());
       }
     },
-    [selected, showToast],
+    [selected, showToast, feed],
   );
 
   return (
@@ -412,7 +439,7 @@ export const DocumentLibraryPanel = React.memo(function DocumentLibraryPanel() {
             Recent
           </span>
         </div>
-        <ImportHistory limit={4} source={docs} />
+        <ImportHistory limit={4} source={docsWithAdapter} />
       </div>
 
       {/* Preview modal */}
