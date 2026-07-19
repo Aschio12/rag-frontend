@@ -48,7 +48,10 @@ import {
 } from "@/components/workspace/primitives/WorkspaceBridge";
 import { CommandPalette } from "@/components/workspace/command/CommandPalette";
 import { InspectorV2 } from "@/components/workspace/inspector/InspectorV2";
-import type { DispatchedAction } from "@/components/workspace/command/actions-model";
+import { agentRunStore, useAgentRunStore } from "@/lib/agent-run-store";
+import { docsFeed, useDocsFeed } from "@/lib/docs-feed";
+import type { AgentStepEvent } from "@/lib/api";
+import { type DispatchedAction } from "@/components/workspace/command/actions-model";
 import { useAetherTheme } from "@/design-system/themes";
 import type { Source } from "@/lib/api";
 
@@ -229,6 +232,7 @@ function HomeInner() {
 
       try {
         if (agenticMode) {
+          agentRunStore.startRun();
           const steps: import("@/lib/api").AgentStepEvent[] = [];
           let finalAnswer = "";
           const stream = sendAgenticMessage(
@@ -238,6 +242,7 @@ function HomeInner() {
           for await (const event of stream) {
             if (controller.signal.aborted) break;
             steps.push(event);
+            agentRunStore.feedEvent(event);
             setAgentSteps((prev) => ({ ...prev, [assistantId]: [...steps] }));
             if (event.event === "complete") {
               finalAnswer = event.answer || "";
@@ -263,6 +268,7 @@ function HomeInner() {
               setStreamingContent(`Processing ${event.label || "step"}…`);
             }
           }
+          agentRunStore.stopRun();
           if (!controller.signal.aborted && !finalAnswer) {
             updateConversation(convId, (c) => ({
               ...c,
