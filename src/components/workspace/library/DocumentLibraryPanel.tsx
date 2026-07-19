@@ -35,7 +35,8 @@ import { ImportHistory } from "./ImportHistory";
 import { LazyCard } from "./LazyCard";
 import { FilterChipStrip, type FilterChip } from "./FilterChipStrip";
 
-import { AppDocument, DocType } from "./document-model";
+import { DocType } from "./document-model-types";
+import type { AppDocument } from "./document-model-types";
 import { useAetherMotion } from "@/design-system/motion";
 import { useToast } from "@/components/Toast";
 import { useDocsFeed, type DocRecord } from "@/lib/docs-feed";
@@ -537,7 +538,7 @@ function EmptyState({ searching, onReset }: { searching: boolean; onReset: () =>
 }
 
 /** Re-export minimal types to keep file cohesion. */
-export type { AppDocument } from "./document-model";
+export type { AppDocument } from "./document-model-types";
 
 // keep stub
 export const _types: DocType[] = ALL_TYPES;

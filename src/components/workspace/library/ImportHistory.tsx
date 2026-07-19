@@ -9,7 +9,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FileCheck2, AlertTriangle, Loader2, Clock } from "lucide-react";
-import type { AppDocument } from "./document-model";
+import type { AppDocument } from "./document-model-types";
 
 interface ImportHistoryProps {
   limit?: number;

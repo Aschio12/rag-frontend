@@ -22,7 +22,7 @@ import {
   Pin,
 } from "lucide-react";
 import { useAetherMotion } from "@/design-system/motion";
-import type { AppDocument } from "./document-model";
+import type { AppDocument } from "./document-model-types";
 
 export interface DocumentCardProps {
   doc: AppDocument;
