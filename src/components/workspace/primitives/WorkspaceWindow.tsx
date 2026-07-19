@@ -12,7 +12,7 @@
  */
 
 import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type HTMLMotionProps } from "framer-motion";
 import { useAetherMotion } from "@/design-system/motion";
 import {
   PanelRightClose,
@@ -24,6 +24,17 @@ import {
   Minimize2,
 } from "lucide-react";
 import { Panel } from "@/components/shell/Panel";
+
+type SafeButtonProps = Omit<
+  HTMLMotionProps<"button">,
+  "ref" | "onAnimationStart" | "onAnimationEnd" | "onDragStart" | "onDragEnd" | "onDrag" | "transition" | "onChange" | "onInput"
+> & {
+  active?: boolean;
+  dangerOnHover?: boolean;
+  children?: React.ReactNode;
+  style?: React.CSSProperties;
+  ref?: React.Ref<HTMLButtonElement>;
+};
 
 export interface WorkspaceWindowProps {
   id: string;
@@ -226,10 +237,7 @@ const WindowActionButton = React.memo(function WindowActionButton({
   active,
   dangerOnHover,
   ...rest
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  active?: boolean;
-  dangerOnHover?: boolean;
-}) {
+}: SafeButtonProps) {
   const [hovered, setHovered] = React.useState(false);
   return (
     <motion.button
@@ -257,7 +265,7 @@ const WindowActionButton = React.memo(function WindowActionButton({
         cursor: "pointer",
         transition: "background 160ms ease, color 160ms ease",
       }}
-      {...(rest as React.ButtonHTMLAttributes<HTMLButtonElement>)}
+      {...(rest as Parameters<typeof motion.button>[0])}
     >
       {children}
     </motion.button>

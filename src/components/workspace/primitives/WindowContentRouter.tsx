@@ -3,20 +3,16 @@
 /**
  * WindowContentRouter — picks the right panel body for a window kind.
  *
- * Each window kind renders one specialist panel. Heavy visualizations
- * (xyflow, recharts) are lazy-loaded via `next/dynamic`.
+ * Document kinds route to the Library system. Other kinds (graph, mindmap,
+ * timeline, etc.) are deferred to later phases and render a premium
+ * "ComingSoonPanel" until they're built (preserves the workspace
+ * composition without claiming backlog work as done).
  */
 
 import * as React from "react";
 import type { WorkspaceWindowKind } from "./useWorkspaceStore";
 import { DocumentLibraryPanel } from "../library/DocumentLibraryPanel";
-import { DocumentImportPanel } from "../library/DocumentImportPanel";
-import { KnowledgeGraphPanel } from "../graph/KnowledgeGraphPanel";
-import { MindMapPanel } from "../mindmap/MindMapPanel";
-import { AgentTimelinePanel } from "../agent/AgentTimelinePanel";
-import { NotesPanel } from "../notes/NotesPanel";
-import { ConversationInWorkspace } from "../library/ConversationInWorkspace";
-import { WorkspacePanel } from "../primitives/WorkspacePanel";
+import { ComingSoonPanel } from "./ComingSoonPanel";
 
 interface Props {
   id: string;
@@ -27,56 +23,76 @@ interface Props {
 export const WindowContentRouter = React.memo(function WindowContentRouter({
   id,
   kind,
-  payload,
+  payload: _payload,
 }: Props) {
   switch (kind) {
-    case "conversation":
-      return <ConversationInWorkspace payload={payload} />;
     case "library":
-      return <DocumentLibraryPanel />;
-    case "knowledge-graph":
-      return <KnowledgeGraphPanel id={id} />;
-    case "mind-map":
-      return <MindMapPanel />;
-    case "agent-timeline":
-      return <AgentTimelinePanel />;
-    case "notes":
-      return <NotesPanel />;
     case "import":
-      return <DocumentImportPanel />;
+      return <DocumentLibraryPanel />;
+
+    case "knowledge-graph":
+      return (
+        <ComingSoonPanel
+          kind="knowledge-graph"
+          title="Knowledge Graph (deferred)"
+          message="xyflow-based soft cards will arrive in a later phase."
+        />
+      );
+    case "mind-map":
+      return (
+        <ComingSoonPanel
+          kind="mind-map"
+          title="Mind Map (deferred)"
+          message="Radial SVG mind map is queued for a later phase."
+        />
+      );
+    case "agent-timeline":
+      return (
+        <ComingSoonPanel
+          kind="agent-timeline"
+          title="Agent Timeline (deferred)"
+          message="Cinematic timeline with phase completion dial is queued for a later phase."
+        />
+      );
+    case "conversation":
+      return (
+        <ComingSoonPanel
+          kind="conversation"
+          title="Conversation (deferred)"
+          message="Inline conversation window — body lifted from existing chat in a later phase."
+        />
+      );
+    case "notes":
+      return (
+        <ComingSoonPanel
+          kind="notes"
+          title="Notes (deferred)"
+          message="Smart notes with markdown memory are queued for a later phase."
+        />
+      );
     case "canvas":
       return (
-        <WorkspacePanel title="Canvas" subtitle="Free-form intelligence surface">
-          <ComingSoon label="Canvas · abstract workspace" />
-        </WorkspacePanel>
+        <ComingSoonPanel
+          kind="canvas"
+          title="Canvas (deferred)"
+          message="Free-form intelligence canvas is queued for a later phase."
+        />
       );
     case "preview":
       return (
-        <WorkspacePanel title="Preview" subtitle="Staged doc preview">
-          <ComingSoon label="Preview · document inspector" />
-        </WorkspacePanel>
+        <ComingSoonPanel
+          kind="preview"
+          title="Preview (deferred)"
+          message="In-place document preview is queued for a later phase."
+        />
       );
     default:
       return (
-        <WorkspacePanel title={kind}>
-          <ComingSoon label={kind} />
-        </WorkspacePanel>
+        <ComingSoonPanel
+          kind="conversation"
+          title="Workspace window"
+          message="Awaiting configuration."
+        />
       );
   }
 });
-
-function ComingSoon({ label }: { label: string }) {
-  return (
-    <div
-      style={{
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "var(--aether-text-tertiary)",
-      }}
-    >
-      <span style={{ fontSize: 12, letterSpacing: "0.04em" }}>{label.toUpperCase()}</span>
-    </div>
-  );
-}
