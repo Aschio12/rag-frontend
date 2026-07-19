@@ -1,10 +1,5 @@
 "use client";
 
-/**
- * Inspector v2 — concrete section panels (Sources, Timeline, Memory, Context,
- * Files, Token usage).
- */
-
 import * as React from "react";
 import { motion } from "framer-motion";
 import {
@@ -18,30 +13,30 @@ import {
   CalendarClock,
 } from "lucide-react";
 import { useAetherMotion } from "@/design-system/motion";
-import {
-  sampleSources,
-  sampleMemory,
-  sampleFiles,
-  sampleTokenUsageByDay,
-  type InspectorSource,
-  type TokenUsageByDay,
-  type MemoryCard,
-  type InspectorFile,
-} from "./inspector-model";
+import { useAgentRunStore } from "@/lib/agent-run-store";
+import { useDocsFeed } from "@/lib/docs-feed";
+import { useSelectedDocument } from "@/lib/selection-store";
+import type { Source } from "@/lib/api";
+import { formatRel, fmtTokens } from "./inspector-model";
 
 /* ─── Sources panel ──────────────────────────────────────────────────── */
 
 export const InspectorSources = React.memo(function InspectorSources() {
+  const { completed } = useAgentRunStore();
+  const sources = completed?.sources ?? [];
+  if (sources.length === 0) {
+    return <EmptySection message="No sources from the last run." />;
+  }
   return (
     <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-      {sampleSources.map((s, i) => (
-        <SourceRow key={s.id} source={s} index={i} />
+      {sources.map((s, i) => (
+        <SourceRow key={`${s.doc_id}-${i}`} source={s} index={i} />
       ))}
     </ul>
   );
 });
 
-function SourceRow({ source, index }: { source: InspectorSource; index: number }) {
+function SourceRow({ source, index }: { source: Source; index: number }) {
   const { reduced } = useAetherMotion();
   const tone = source.score > 0.8 ? "#7AE0A2" : source.score > 0.6 ? "#E8B86B" : "#9BC5FF";
   return (
@@ -62,9 +57,9 @@ function SourceRow({ source, index }: { source: InspectorSource; index: number }
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <FileSearch2 size={12} strokeWidth={1.6} style={{ color: "var(--aether-text-tertiary)" }} />
         <span style={{ fontSize: 12, color: "var(--aether-text-primary)", letterSpacing: "-0.005em", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          {source.document}
-          {source.page !== undefined && (
-            <span style={{ color: "var(--aether-text-muted)", marginLeft: 6 }}>· p.{source.page}</span>
+          {source.filename ?? source.doc_id}
+          {source.page_number !== undefined && (
+            <span style={{ color: "var(--aether-text-muted)", marginLeft: 6 }}>· p.{source.page_number}</span>
           )}
         </span>
         <span style={{ fontSize: 10, color: tone, padding: "2px 8px", border: `1px solid ${tone}40`, borderRadius: 999 }}>
@@ -72,11 +67,8 @@ function SourceRow({ source, index }: { source: InspectorSource; index: number }
         </span>
       </div>
       <p style={{ fontSize: 11, color: "var(--aether-text-secondary)", lineHeight: 1.55, letterSpacing: "-0.005em", margin: 0 }}>
-        {source.excerpt}
+        {source.text}
       </p>
-      <span style={{ fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--aether-text-muted)" }}>
-        collected {formatRel(source.collectedAt)}
-      </span>
     </motion.li>
   );
 }
@@ -84,11 +76,15 @@ function SourceRow({ source, index }: { source: InspectorSource; index: number }
 /* ─── Timeline panel ─────────────────────────────────────────────────── */
 
 export const InspectorTimeline = React.memo(function InspectorTimeline() {
+  const { events } = useAgentRunStore();
+  if (events.length === 0) {
+    return <EmptySection message="No agent activity yet. Start a conversation." />;
+  }
   return (
     <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-      {sampleSources.map((s, i) => (
+      {events.map((ev, i) => (
         <motion.li
-          key={s.id}
+          key={`${ev.step ?? ev.event}-${i}`}
           initial={{ opacity: 0, x: -6 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.32, delay: i * 0.04 }}
@@ -107,8 +103,10 @@ export const InspectorTimeline = React.memo(function InspectorTimeline() {
               width: 8,
               height: 8,
               borderRadius: 999,
-              background: "var(--aether-text-accent)",
-              boxShadow: "0 0 8px rgba(232,255,107,0.55)",
+              background: ev.event === "step_error" ? "#FF6B6B" : "var(--aether-text-accent)",
+              boxShadow: ev.event === "step_error"
+                ? "0 0 8px rgba(255,107,107,0.55)"
+                : "0 0 8px rgba(232,255,107,0.55)",
             }}
           />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -123,7 +121,7 @@ export const InspectorTimeline = React.memo(function InspectorTimeline() {
                 letterSpacing: "-0.005em",
               }}
             >
-              {s.document}
+              {ev.label ?? ev.step ?? ev.event}
             </p>
             <p
               style={{
@@ -134,7 +132,7 @@ export const InspectorTimeline = React.memo(function InspectorTimeline() {
                 margin: 0,
               }}
             >
-              {formatRel(s.collectedAt)}
+              {ev.duration ? `${(ev.duration / 1000).toFixed(1)}s` : ev.event}
             </p>
           </div>
           <CalendarClock size={11} style={{ color: "var(--aether-text-tertiary)" }} />
@@ -147,19 +145,43 @@ export const InspectorTimeline = React.memo(function InspectorTimeline() {
 /* ─── Memory panel ───────────────────────────────────────────────────── */
 
 export const InspectorMemory = React.memo(function InspectorMemory() {
+  const { completed } = useAgentRunStore();
+  if (!completed) {
+    return <EmptySection message="No memory yet. Run an agent query first." />;
+  }
+  const cards: { title: string; value: string; badge: "stable" | "fresh" }[] = [];
+  if (completed.plan) {
+    cards.push({ title: "Plan", value: completed.plan, badge: "stable" });
+  }
+  if (completed.critique) {
+    cards.push({ title: "Critique", value: completed.critique, badge: "fresh" });
+  }
+  if (completed.verification?.length) {
+    cards.push({
+      title: "Verification",
+      value: `${completed.verification.filter(v => v.supported).length}/${completed.verification.length} claims supported`,
+      badge: "stable",
+    });
+  }
+  if (completed.searchQueries?.length) {
+    cards.push({
+      title: "Search queries",
+      value: completed.searchQueries.join(", "),
+      badge: "fresh",
+    });
+  }
   return (
     <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-      {sampleMemory.map((m, i) => (
-        <MemoryRow key={m.id} memory={m} index={i} />
+      {cards.map((c, i) => (
+        <MemoryRow key={c.title} entry={c} index={i} />
       ))}
     </ul>
   );
 });
 
-function MemoryRow({ memory, index }: { memory: MemoryCard; index: number }) {
+function MemoryRow({ entry, index }: { entry: { title: string; value: string; badge: "stable" | "drift" | "fresh" }; index: number }) {
   const { reduced } = useAetherMotion();
-  const tone =
-    memory.badge === "stable" ? "#7AE0A2" : memory.badge === "fresh" ? "#E8FF6B" : "#E8B86B";
+  const tone = entry.badge === "stable" ? "#7AE0A2" : entry.badge === "fresh" ? "#E8FF6B" : "#E8B86B";
   return (
     <motion.li
       initial={reduced ? false : { opacity: 0, y: 6 }}
@@ -178,30 +200,25 @@ function MemoryRow({ memory, index }: { memory: MemoryCard; index: number }) {
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <Brain size={12} strokeWidth={1.6} style={{ color: "var(--aether-text-tertiary)" }} />
         <span style={{ fontSize: 11, color: "var(--aether-text-secondary)", letterSpacing: "0.06em", textTransform: "uppercase", flex: 1 }}>
-          {memory.title}
+          {entry.title}
         </span>
-        {memory.badge && (
-          <span
-            style={{
-              fontSize: 9,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: tone,
-              border: `1px solid ${tone}40`,
-              padding: "2px 6px",
-              borderRadius: 999,
-            }}
-          >
-            {memory.badge}
-          </span>
-        )}
+        <span
+          style={{
+            fontSize: 9,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: tone,
+            border: `1px solid ${tone}40`,
+            padding: "2px 6px",
+            borderRadius: 999,
+          }}
+        >
+          {entry.badge}
+        </span>
       </div>
       <p style={{ fontSize: 12, color: "var(--aether-text-primary)", letterSpacing: "-0.005em", margin: 0 }}>
-        {memory.value}
+        {entry.value}
       </p>
-      <span style={{ fontSize: 9.5, color: "var(--aether-text-muted)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-        updated {formatRel(memory.updatedAt)}
-      </span>
     </motion.li>
   );
 }
@@ -209,22 +226,25 @@ function MemoryRow({ memory, index }: { memory: MemoryCard; index: number }) {
 /* ─── Context panel ──────────────────────────────────────────────────── */
 
 export const InspectorContext = React.memo(function InspectorContext() {
+  const { active: agentActive, completed } = useAgentRunStore();
+  const selectedDoc = useSelectedDocument();
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <ContextCard
         label="Active conversation"
-        value="OpenAI Workspace design · 12 messages"
-        secondary="Editing last message"
+        value={agentActive ? "Agent query in progress" : completed ? "Agent query complete" : "No active conversation"}
+        secondary={agentActive ? "Reasoning live" : completed ? `${completed.sources.length} sources` : "Start typing to begin"}
       />
       <ContextCard
         label="Active agent"
-        value="Multi-agent orchestrator"
-        secondary="5 phases · reasoning live"
+        value={agentActive ? "Multi-agent orchestrator" : "Idle"}
+        secondary={agentActive ? "Processing" : "Awaiting input"}
       />
       <ContextCard
-        label="Knowledge base"
-        value="Personal Workspace"
-        secondary="12 documents · 2 collections"
+        label="Selected document"
+        value={selectedDoc ?? "None"}
+        secondary={selectedDoc ? "Highlighted in Graph & Map" : "Open a document from Library"}
       />
       <ContextCard
         label="Voice preference"
@@ -281,8 +301,20 @@ function ContextCard({
 /* ─── Files panel ────────────────────────────────────────────────────── */
 
 export const InspectorFiles = React.memo(function InspectorFiles() {
+  const { docs, loading, error } = useDocsFeed();
   const [filter, setFilter] = React.useState<"all" | "pdf" | "md" | "html" | "txt">("all");
-  const visible = sampleFiles.filter((f) => filter === "all" || f.type === filter);
+  const visible = docs.filter((f) => filter === "all" || f.type === filter);
+
+  if (loading) {
+    return <EmptySection message="Loading files…" />;
+  }
+  if (error) {
+    return <EmptySection message={`Error: ${error}`} />;
+  }
+  if (docs.length === 0) {
+    return <EmptySection message="No files yet. Upload a document." />;
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -326,7 +358,7 @@ export const InspectorFiles = React.memo(function InspectorFiles() {
               border: "1px dashed var(--aether-border-subtle)",
             }}
           >
-            No files yet in this filter.
+            No {filter === "all" ? "" : filter.toUpperCase()} files.
           </li>
         )}
       </ul>
@@ -334,7 +366,7 @@ export const InspectorFiles = React.memo(function InspectorFiles() {
   );
 });
 
-function FileRow({ file, index }: { file: InspectorFile; index: number }) {
+function FileRow({ file, index }: { file: { id: string; filename: string; type: string; chunkCount: number; sizeBytes?: number; uploadedAt: string }; index: number }) {
   const { reduced } = useAetherMotion();
   return (
     <motion.li
@@ -376,7 +408,7 @@ function FileRow({ file, index }: { file: InspectorFile; index: number }) {
             textTransform: "uppercase",
           }}
         >
-          {file.chunks} chunks · {file.tokens.toLocaleString()} tokens
+          {file.chunkCount} chunks{file.sizeBytes ? ` · ${fmtTokens(file.sizeBytes)}B` : ""}
         </p>
       </div>
     </motion.li>
@@ -386,21 +418,49 @@ function FileRow({ file, index }: { file: InspectorFile; index: number }) {
 /* ─── Token usage panel ─────────────────────────────────────────────── */
 
 export const InspectorTokenUsage = React.memo(function InspectorTokenUsage() {
-  const total = sampleTokenUsageByDay.reduce((acc, d) => acc + d.consumed, 0);
-  const budget = sampleTokenUsageByDay[0].budget * sampleTokenUsageByDay.length;
-  const today = sampleTokenUsageByDay[sampleTokenUsageByDay.length - 1].consumed;
+  const { events, completed } = useAgentRunStore();
+
+  const dailyData = React.useMemo(() => {
+    if (!completed || events.length === 0) {
+      return [];
+    }
+
+    const groups = new Map<string, { consumed: number; budget: number; label: string; iso: string }>();
+
+    const baseBudget = 30000;
+
+    events.forEach((ev) => {
+      const date = new Date();
+      const iso = date.toISOString().slice(0, 10);
+      if (!groups.has(iso)) {
+        groups.set(iso, { consumed: 0, budget: baseBudget, label: date.toLocaleDateString("en", { weekday: "short" }), iso });
+      }
+      const g = groups.get(iso)!;
+      g.consumed += Math.round((ev.duration ?? 100) / 10);
+    });
+
+    return Array.from(groups.values()).slice(-7);
+  }, [events, completed]);
+
+  const total = dailyData.reduce((acc, d) => acc + d.consumed, 0);
+  const budget = dailyData.length * (dailyData[0]?.budget ?? 30000);
+  const today = dailyData[dailyData.length - 1]?.consumed ?? 0;
+
+  if (dailyData.length === 0) {
+    return <EmptySection message="No token data yet. Run an agent query." />;
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <StatRow label="Today" value={fmt(today)} secondary="of 30,000 budget" />
+      <StatRow label="Today" value={fmtTokens(today)} secondary={`of ${fmtTokens(30000)} budget`} />
       <StatRow
-        label="7-day total"
-        value={fmt(total)}
-        secondary={"capacity " + fmt(budget)}
+        label="Session total"
+        value={fmtTokens(total)}
+        secondary={"capacity " + fmtTokens(budget)}
       />
-      <BarChart usageByDay={sampleTokenUsageByDay} />
+      <BarChart usageByDay={dailyData} />
       <p style={{ fontSize: 11, color: "var(--aether-text-tertiary)", margin: 0, letterSpacing: "0.02em" }}>
-        Bars show daily token consumption vs your daily budget. Reading above
-        70% lights the chart in lime.
+        Bars show estimated per-day token consumption vs daily budget.
       </p>
     </div>
   );
@@ -457,7 +517,7 @@ function StatRow({
   );
 }
 
-function BarChart({ usageByDay }: { usageByDay: TokenUsageByDay[] }) {
+function BarChart({ usageByDay }: { usageByDay: { consumed: number; budget: number; label: string; iso: string }[] }) {
   const max = Math.max(...usageByDay.map((d) => d.consumed));
   return (
     <div
@@ -516,21 +576,22 @@ function BarChart({ usageByDay }: { usageByDay: TokenUsageByDay[] }) {
   );
 }
 
-/* ─── helpers ───────────────────────────────────────────────────────── */
+/* ─── Empty state ────────────────────────────────────────────────────── */
 
-function formatRel(iso: string): string {
-  const then = new Date(iso).getTime();
-  const now = Date.UTC(2026, 0, 14, 12, 30);
-  const diff = Math.max(0, now - then);
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
-
-function fmt(n: number): string {
-  if (n < 1000) return `${n}`;
-  if (n < 10000) return `${(n / 1000).toFixed(1)}k`;
-  return `${Math.round(n / 1000)}k`;
+function EmptySection({ message }: { message: string }) {
+  return (
+    <div
+      style={{
+        padding: "24px 16px",
+        textAlign: "center",
+        fontSize: 12,
+        color: "var(--aether-text-muted)",
+        borderRadius: 14,
+        border: "1px dashed var(--aether-border-subtle)",
+        letterSpacing: "-0.005em",
+      }}
+    >
+      {message}
+    </div>
+  );
 }
