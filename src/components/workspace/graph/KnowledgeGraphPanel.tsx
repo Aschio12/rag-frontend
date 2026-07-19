@@ -36,8 +36,16 @@ import {
   kindColor,
   type ConceptKind,
   type ConceptGraph,
+  type ConceptNode,
+  type ConceptEdge,
 } from "./graph-model";
 import { radialLayout } from "./radialLayout";
+import { extractKnowledgeGraph } from "@/lib/api";
+import {
+  useSelectedDocument,
+  useFocusedChunk,
+} from "@/lib/selection-store";
+import { useDocsFeed } from "@/lib/docs-feed";
 
 interface Props {
   docId?: string;
@@ -56,8 +64,75 @@ export const KnowledgeGraphPanel = React.memo(function KnowledgeGraphPanel({
   );
 });
 
-function KnowledgeGraphInner({ docId: _docId }: Props) {
-  const graph = React.useMemo<ConceptGraph>(() => buildSampleGraph(), []);
+function KnowledgeGraphInner(_: { docId?: string }) {
+  const sample = React.useRef<ConceptGraph>(buildSampleGraph());
+  const docId = useSelectedDocument();
+  const chunk = useFocusedChunk();
+  const feed = useDocsFeed();
+  const [graph, setGraph] = React.useState<ConceptGraph>(() => sample.current);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  // Pull live graph when a document is selected.
+  React.useEffect(() => {
+    let cancelled = false;
+    if (!docId) {
+      setGraph(sample.current);
+      setError(null);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    void (async () => {
+      try {
+        const raw = (await extractKnowledgeGraph(docId)) as {
+          nodes: Array<{ id: string; label?: string; type?: string; summary?: string }>;
+          edges: Array<{ from: string; to: string; label?: string; weight?: number; source?: string; target?: string }>;
+        };
+        if (cancelled) return;
+        const nodes: ConceptNode[] = (raw.nodes ?? []).map((n, i) => ({
+          id: String(n.id),
+          label: String(n.label ?? "(unnamed)"),
+          summary: n.summary,
+          kind: ((["concept", "person", "place", "thing", "event"] as ConceptKind[]).find(
+            (k) => (n.type ?? "").toLowerCase().includes(k),
+          ) ?? "concept") as ConceptKind,
+          weight: Math.min(1, 0.5 + (i % 4) * 0.12),
+        }));
+        const edges: ConceptEdge[] = (raw.edges ?? []).map((e) => ({
+          source: String(e.source ?? e.from ?? ""),
+          target: String(e.target ?? e.to ?? ""),
+          label: e.label,
+          weight: typeof e.weight === "number" ? e.weight : 0.45,
+        }));
+        setGraph({ nodes, edges });
+      } catch (e) {
+        if (cancelled) return;
+        setError(e instanceof Error ? e.message : "Failed to extract graph");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // feed reference exists but is unused; intentional — keeps the file hot
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [docId]);
+
+  // Focus the node carrying focused-chunk hint if the inspector flagged it.
+  const chunkMatchedId = React.useMemo(() => {
+    if (chunk === null) return null;
+    if (!graph.nodes.length) return null;
+    return graph.nodes[chunk % graph.nodes.length]?.id ?? null;
+  }, [chunk, graph.nodes]);
+
+  React.useEffect(() => {
+    if (chunkMatchedId) setFocusedId(chunkMatchedId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chunkMatchedId]);
+
+  void feed;
 
   const [query, setQuery] = React.useState("");
   const [activeKinds, setActiveKinds] = React.useState<Set<ConceptKind>>(
