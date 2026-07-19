@@ -110,6 +110,14 @@ export function buildActions(dispatch: Dispatcher): ActionDef[] {
       run: () => dispatch({ kind: "workspace.open", payload: { kind: "library", title: "Library" } }),
     },
     {
+      id: "docs.search",
+      group: "Documents",
+      label: "Search documents",
+      hint: "Filter by name",
+      keywords: ["search", "find", "documents", "filter", "query"],
+      run: () => dispatch({ kind: "documents.search", payload: { q: "" } }),
+    },
+    {
       id: "docs.clear-filter",
       group: "Documents",
       label: "Clear document filters",

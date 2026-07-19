@@ -18,8 +18,10 @@ import {
   CornerDownLeft,
   ArrowUp,
   ArrowDown,
+  Files,
 } from "lucide-react";
 import { useAetherMotion } from "@/design-system/motion";
+import { useDocsFeed } from "@/lib/docs-feed";
 import { buildActions } from "./actions";
 import type { ActionDef, Dispatcher } from "./actions";
 import type { ActionGroup, DispatchedAction } from "./actions-model";
@@ -187,6 +189,9 @@ export const CommandPalette = React.memo(function CommandPalette({
                       style={{ padding: "6px 0" }}
                     >
                       <GroupHeader>{GROUP_LABEL[group]}</GroupHeader>
+                      {group === "Documents" ? (
+                        <DocumentItems onSelect={onClose} />
+                      ) : null}
                       {inGroup.map((a) => (
                         <Command.Item
                           value={a.label + " " + (a.keywords ?? []).join(" ")}
@@ -287,6 +292,58 @@ export const CommandPalette = React.memo(function CommandPalette({
     </AnimatePresence>
   );
 });
+
+function DocumentItems({ onSelect }: { onSelect: () => void }) {
+  const { docs, loading } = useDocsFeed();
+  if (loading || docs.length === 0) return null;
+  return (
+    <>
+      {docs.map((d) => (
+        <Command.Item
+          key={d.id}
+          value={`${d.filename} doc document ${d.type}`}
+          onSelect={() => {
+            onSelect();
+          }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "8px 16px 8px 20px",
+            margin: "0 8px",
+            borderRadius: 10,
+            transition: "all 120ms ease",
+            cursor: "pointer",
+          }}
+          className="aether-cmdk-item"
+        >
+          <Files size={11} strokeWidth={1.6} style={{ color: "var(--aether-text-muted)" }} />
+          <span
+            style={{
+              fontSize: 12.5,
+              flex: 1,
+              minWidth: 0,
+              letterSpacing: "-0.005em",
+              color: "var(--aether-text-primary)",
+            }}
+          >
+            {d.filename}
+          </span>
+          <span
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: "var(--aether-text-muted)",
+            }}
+          >
+            {d.type.toUpperCase()}
+          </span>
+        </Command.Item>
+      ))}
+    </>
+  );
+}
 
 function GroupHeader({ children }: { children: React.ReactNode }) {
   return (
