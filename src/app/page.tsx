@@ -82,18 +82,17 @@ function HomeInner() {
   const [docRefreshKey, setDocRefreshKey] = useState(0);
   const [streamingContent, setStreamingContent] = useState("");
   const [loading, setLoading] = useState(false);
-  const [hybridSearch, setHybridSearch] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("hybridSearch") === "true";
-  });
+  const [hybridSearch, setHybridSearch] = useState(false);
   const [sourceViewerOpen, setSourceViewerOpen] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [relatedQuestions, setRelatedQuestions] = useState<string[]>([]);
   const [relatedLoading, setRelatedLoading] = useState(false);
-  const [agenticMode, setAgenticMode] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("agenticMode") === "true";
-  });
+  const [agenticMode, setAgenticMode] = useState(false);
+
+  React.useEffect(() => {
+    setHybridSearch(localStorage.getItem("hybridSearch") === "true");
+    setAgenticMode(localStorage.getItem("agenticMode") === "true");
+  }, []);
   const [agentSteps, setAgentSteps] = useState<
     Record<string, import("@/lib/api").AgentStepEvent[]>
   >({});
